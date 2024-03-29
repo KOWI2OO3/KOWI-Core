@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "KOWI2003.Core.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+
+  ],
+  "server":[
+    
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "refmap": "kowi_core.mixin-refmap.json"
+}
