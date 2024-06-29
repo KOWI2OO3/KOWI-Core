@@ -28,6 +28,16 @@ public class Contraption implements Iterable<BlockPos>, INBTSerializable<Compoun
      */
     public Contraption() {}
 
+    public Contraption(BlockData[] blocks) {
+        for (BlockData block : blocks) {
+            if(block.state() == null || block.state().isAir()) continue;
+            
+            this.blocks.put(block.position(), block.state());
+            if(block.blockEntity() != null)
+                this.blockEntities.put(block.position(), block.blockEntity());
+        }
+    }
+
     /**
      * Constructor with block data and block entities
      * @param blocks block data
@@ -42,6 +52,12 @@ public class Contraption implements Iterable<BlockPos>, INBTSerializable<Compoun
             this.blockEntities.putAll(blockEntities);
         }
     }
+
+    /**
+     * The id of the contraption
+     * @return contraption id
+     */
+    public UUID id() { return id; }
 
     /**
      * Sets block data at position
