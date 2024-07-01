@@ -30,7 +30,6 @@ import net.minecraftforge.items.IItemHandler;
 public class CapabilityEvents {
     
     @SubscribeEvent
-    @SuppressWarnings("null")
     public static void attachItemStackCapabilities(AttachCapabilitiesEvent<ItemStack> event) {
         ItemStack stack = event.getObject();
 

@@ -28,7 +28,7 @@ public class Contraption implements Iterable<BlockPos>, INBTSerializable<Compoun
      */
     public Contraption() {}
 
-    public Contraption(BlockData[] blocks) {
+    public Contraption(BlockData... blocks) {
         for (BlockData block : blocks) {
             if(block.state() == null || block.state().isAir()) continue;
             
