@@ -250,15 +250,13 @@ public class RenderHelper {
                     (int)wrapper.position().x, 
                     (int)wrapper.position().y, 
                     (int)wrapper.position().z)),
-            wrapper.level());
+            wrapper.internalLevel());
         
         result.setPosition(new Vec3(
             wrapper.position().x() % 1,
             wrapper.position().y() % 1,
             wrapper.position().z() % 1
         ));
-
-        // result.setRotation(wrapper.rotation());
         return result;
     }
 

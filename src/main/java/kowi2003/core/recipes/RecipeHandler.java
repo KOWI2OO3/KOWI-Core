@@ -152,7 +152,6 @@ public class RecipeHandler<K extends Recipe<Container>> implements INBTSerializa
      * @param level the level to get the recipe from (because of datapacks)
      * @return an optional which potentially contain the recipe which corresponds to the contents of the inventory and tanks
      */
-    @SuppressWarnings("null")
     public Optional<K> checkRecipes(IItemHandlerModifiable inv, @Nonnull IFluidHandler[] tanks, @Nonnull Level level) {
         // Requires a special null check because, we need to call a different method to get all recipes without checking the inventory
         var recipes = inv != null ? level.getRecipeManager().getRecipesFor(recipeType, new RecipeWrapper(inv), level) : level.getRecipeManager().getAllRecipesFor(recipeType);

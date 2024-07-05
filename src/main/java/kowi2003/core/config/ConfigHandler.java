@@ -58,7 +58,7 @@ public class ConfigHandler {
      * @return a Config supplier, whenever the config is required get the config from the supplier to make sure its the latest version
      */
 	@Nonnull
-    @SuppressWarnings({"null", "unchecked"})
+    @SuppressWarnings("unchecked")
     public static <T> Supplier<T> registerConfig(@Nonnull T defaultConfig, @Nonnull ModLoadingContext context, @Nonnull Type configType, @Nullable String filename) {
         var spec = createForgeConfigSpec(defaultConfig);
         var temp = new ResourceLocation(context.getActiveNamespace(), configType.toString().toLowerCase());
@@ -84,7 +84,6 @@ public class ConfigHandler {
      * @return a Config supplier, whenever the config is required get the config from the supplier to make sure its the latest version
      */
 	@Nonnull
-    @SuppressWarnings("null")
     public static <T> Supplier<T> registerConfig(@Nonnull T defaultConfig, @Nonnull Type configType, @Nullable String filename) {
         return registerConfig(defaultConfig, ModLoadingContext.get(), configType, filename);
     }
@@ -97,7 +96,6 @@ public class ConfigHandler {
      * @return a Config supplier, whenever the config is required get the config from the supplier to make sure its the latest version
      */
 	@Nonnull
-    @SuppressWarnings("null")
     public static <T> Supplier<T> registerConfig(@Nonnull T defaultConfig, Type configType) {
         return registerConfig(defaultConfig, configType, null);
     }
@@ -258,7 +256,6 @@ public class ConfigHandler {
      * when modifications to the config file through the game have occured
      * @param config the mod config to handle
      */
-    @SuppressWarnings("null")
     private static void handleConfigLoad(ModConfig config) {
         var id = config.getModId();
         var type = config.getType();

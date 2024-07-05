@@ -98,8 +98,7 @@ public class ProcessingResult {
      * @return the itemstack of the result
      */
     @Nonnull
-    @SuppressWarnings("null")
-	public ItemStack getItem() {
+    public ItemStack getItem() {
 		return stack == null ? ItemStack.EMPTY : stack;
 	}
 
@@ -109,7 +108,6 @@ public class ProcessingResult {
      * @return the serialized processing result in a json element
      */
     @Nonnull
-    @SuppressWarnings("null")
     public static JsonElement toJson(@Nonnull ProcessingResult result) {
         var json = ItemHelper.serializeItemStack(result.getItem()).getAsJsonObject();
         if(result.hasRange()) {

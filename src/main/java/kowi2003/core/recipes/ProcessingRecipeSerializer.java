@@ -43,7 +43,6 @@ public class ProcessingRecipeSerializer<T extends ProcessingRecipe<?>> implement
      * @param json the json object to write the recipe to
      * @param recipe the recipe to write to json
      */
-    @SuppressWarnings("null")
     protected void writeToJson(@Nonnull JsonObject json, @Nonnull T recipe) {
         var jsonIngredients = new JsonArray();
         var jsonFluidIngredients = new JsonArray();
@@ -160,7 +159,6 @@ public class ProcessingRecipeSerializer<T extends ProcessingRecipe<?>> implement
      * @param buffer the buffer to write the recipe to
      * @param recipe the recipe that should be written to the buffer
      */
-    @SuppressWarnings("null")
     protected void writeToBuffer(@Nonnull FriendlyByteBuf buffer, @Nonnull T recipe) {
         var ingredients = recipe.getProcessingIngredients();
         var fluidIngredients = recipe.getFluidIngredients();

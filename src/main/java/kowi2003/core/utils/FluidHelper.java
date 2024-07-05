@@ -48,7 +48,6 @@ public class FluidHelper {
      * @throws JsonSyntaxException if the fluid could not be parsed because the fluid tag was missing or incorrect
      */
     @Nonnull
-    @SuppressWarnings("null")
     public static FluidStack deserializeFluid(JsonObject json) {
 		var id = new ResourceLocation(GsonHelper.getAsString(json, "fluid"));
         var fluid = ForgeRegistries.FLUIDS.getValue(id);

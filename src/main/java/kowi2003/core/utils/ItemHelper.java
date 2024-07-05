@@ -61,7 +61,6 @@ public class ItemHelper {
      * @return the item from the resourcekey or air
      */
     @Nonnull
-    @SuppressWarnings("null")
     public static Item getItemFromKey(@Nonnull ResourceKey<Item> key) {
         return ForgeRegistries.ITEMS.getHolder(key).orElse(Holder.direct(Items.AIR)).get();
     }
@@ -72,7 +71,6 @@ public class ItemHelper {
      * @return the item from the resourcekey or air
      */
     @Nonnull
-    @SuppressWarnings("null")
     public static Item getItemFromLocation(@Nonnull ResourceLocation location) {
         return ForgeRegistries.ITEMS.getHolder(location).orElse(Holder.direct(Items.AIR)).get();
     }

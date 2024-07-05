@@ -107,7 +107,6 @@ public class ItemItemStackHandler extends ItemStackHandler {
     /**
      * saves the data to the item stack
      */
-    @SuppressWarnings("null")
     private void saveData() {
         var tag = getStack().getOrCreateTag();
         tag.put("Energy", serializeNBT());

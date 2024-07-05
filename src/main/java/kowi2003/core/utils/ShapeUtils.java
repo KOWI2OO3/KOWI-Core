@@ -107,7 +107,6 @@ public class ShapeUtils {
      * @param aabbs the list of boundingboxes to transform into the VoxelShape
      * @return the VoxelShape created from the list of bounding boxes
      */
-    @SuppressWarnings("null")
     public static VoxelShape getShapeFromAABB(List<AABB> aabbs) {
 		List<VoxelShape> shapes = new ArrayList<>();
 		for(AABB aabb : aabbs)

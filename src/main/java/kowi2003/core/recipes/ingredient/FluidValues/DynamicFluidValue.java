@@ -18,7 +18,6 @@ public class DynamicFluidValue implements FluidValue {
     private final TagKey<Fluid> tag;
     private final FluidStack fluid;
 
-    @SuppressWarnings("null")
     public DynamicFluidValue(@Nonnull String value) {
         var location = new ResourceLocation(value);
         tag = TagKey.create(Registries.FLUID, location);

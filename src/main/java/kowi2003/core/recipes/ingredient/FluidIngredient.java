@@ -80,7 +80,6 @@ public class FluidIngredient implements Predicate<FluidStack> {
      * Serializes the ingredient to the byte buffer to be sent across the network
      * @param buffer the buffer to write the ingredient to
      */
-    @SuppressWarnings("null")
     public final void toNetwork(@Nonnull FriendlyByteBuf buffer) {
         this.dissolve();
         buffer.writeCollection(Arrays.asList(this.fluidStacks), FriendlyByteBuf::writeFluidStack);
@@ -189,7 +188,6 @@ public class FluidIngredient implements Predicate<FluidStack> {
      * @throws JsonParseException if the something went wrong with actually parsing the json
      */
     @Nonnull
-    @SuppressWarnings("null")
     private static FluidIngredient getIngredient(@Nonnull JsonElement json) {
         if(json == null || json.isJsonNull())
             throw new JsonParseException("Json cannot be null");
@@ -222,7 +220,6 @@ public class FluidIngredient implements Predicate<FluidStack> {
      * @throws JsonParseException can be thrown if the json format is incorrect
      */
     @Nonnull
-    @SuppressWarnings("null")
     public static FluidValue valueFromJson(@Nonnull JsonElement element) {
         if(element == null || element.isJsonNull())
             throw new JsonParseException("Json cannot be null");

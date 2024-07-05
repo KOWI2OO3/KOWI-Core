@@ -1,7 +1,8 @@
 package kowi2003.core.blocks;
 
-import java.util.*;
-import java.util.function.*;
+import java.util.List;
+import java.util.function.Supplier;
+
 import javax.annotation.Nonnull;
 
 import net.minecraft.world.item.Item;
@@ -14,14 +15,12 @@ public class OreBlock extends DefaultBlock {
 
 	Supplier<ItemStack> item;
     
-    @SuppressWarnings("null")
     public OreBlock(Properties builder, Supplier<Item> item) {
 		super(builder);
 		this.item = () -> item.get() == null ? new ItemStack(this) : new ItemStack(item.get());
 	}
 
-    @SuppressWarnings("null")
-	public OreBlock(Properties builder, Supplier<Item> item, SoundType sound) {
+    public OreBlock(Properties builder, Supplier<Item> item, SoundType sound) {
 		super(builder, sound);
 		this.item = () -> item.get() == null ? new ItemStack(this) : new ItemStack(item.get());
 	}

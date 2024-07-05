@@ -129,7 +129,6 @@ public final class ProcessingRecipeTypeBuilder<T extends Container> {
      * @return the factory for the processing recipe
      */
     @Nonnull
-    @SuppressWarnings("null")
     public ProcessingRecipeFactory<ProcessingRecipeImpl<T>> factory() {
         var inStart = switch(content) { 
             case FLUID -> 0;

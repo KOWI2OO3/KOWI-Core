@@ -90,7 +90,6 @@ public class ProcessingFluidIngredient implements Predicate<FluidStack> {
      * @return a deserialized processing fluid ingredient
      */
     @Nonnull
-    @SuppressWarnings("null")
     public static ProcessingFluidIngredient fromJson(@Nonnull JsonElement json) {
         var ingredient = (json.isJsonObject() && json.getAsJsonObject().has("values")) ? FluidIngredient.fromJson(json.getAsJsonObject().get("values")) : FluidIngredient.fromJson(json);
         int count = json.isJsonObject() && json.getAsJsonObject().has("count") ? json.getAsJsonObject().get("count").getAsInt() : 1;

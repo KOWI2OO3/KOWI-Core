@@ -55,7 +55,6 @@ public class ItemEnergyStorage extends EnergyStorage {
     }
 
     @Override
-    @SuppressWarnings("null")
     public @Nonnull Tag serializeNBT() {
         return IntTag.valueOf(this.energy);
     }
