@@ -215,12 +215,15 @@ public class Contraption implements Iterable<BlockPos>, INBTSerializable<Compoun
 
         CompoundTag blocksTag = new CompoundTag();
         for(var entry : blocks.entrySet()) {
-            BlockPos position = entry.getKey();
-            BlockState state = entry.getValue();
-            CompoundTag blockTag = new CompoundTag();
+            var position = entry.getKey();
+            var state = entry.getValue();
+            var blockTag = new CompoundTag();
             
             // Saving block state into the state tag
-            CompoundTag stateTag = new CompoundTag();
+            var stateTag = BlockState.CODEC.encodeStart(NbtOps.INSTANCE, state).result().orElse(null);
+            if(stateTag == null)
+             continue;
+            
             BlockState.CODEC.encode(state, NbtOps.INSTANCE, stateTag);
             blockTag.put("state", stateTag);
 

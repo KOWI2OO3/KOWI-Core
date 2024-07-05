@@ -46,7 +46,7 @@ public class ContraptionWrapper implements BlockAndTintGetter, Iterable<BlockPos
 
     @Nonnull public UUID id() { return contraption.id(); }
 
-    @Nonnull public Level level() { return level; }
+    @Nonnull public Level internalLevel() { return level; }
     @Nonnull public Contraption contraption() { return contraption; }
     @Nonnull public Vec3 position() { return position; }
     @Nonnull public Quaternionf rotation() { return rotation; }
@@ -77,6 +77,14 @@ public class ContraptionWrapper implements BlockAndTintGetter, Iterable<BlockPos
         var state = getBlockState(position);
         return state != null ? state.getFluidState() : null;
     } 
+
+    @Nonnull 
+    public Level contraptionLevel() {
+        // TODO: In case of an linkContraption, return the level of the linked contraption
+        // In the other case create a virtual level with the contraption
+        
+        return null;
+    }
 
     @Override
     public int getHeight() { return contraption.height(); }

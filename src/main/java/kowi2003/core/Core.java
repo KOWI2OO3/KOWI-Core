@@ -1,5 +1,7 @@
 package kowi2003.core;
 
+import kowi2003.core.entity.CoreEntitySerializers;
+import kowi2003.core.network.PacketHandler;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -16,8 +18,6 @@ public class Core
 {
     // Define mod id in a common place for everything to reference
     public static final String MODID = "kowicore";
-    // Directly reference a slf4j logger
-    // private static final Logger LOGGER = LogUtils.getLogger();
 
     public Core()
     {
@@ -29,10 +29,11 @@ public class Core
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
     }
-
+    
     private void commonSetup(final FMLCommonSetupEvent event)
     {
-
+        CoreEntitySerializers.register();
+        PacketHandler.registerMessages(Core.MODID);
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call
