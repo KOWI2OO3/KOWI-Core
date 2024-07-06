@@ -124,7 +124,7 @@ public class RenderHelper {
             if(blockEntity != null) {
                 var renderer = mc.getBlockEntityRenderDispatcher().getRenderer(blockEntity);
                 if(renderer != null)
-                    renderer.render(blockEntity, 0, pose, context.bufferSource(), context.combinedLight(), context.combinedOverlay());
+                    renderer.render(blockEntity, mc.getDeltaFrameTime(), pose, context.bufferSource(), context.combinedLight(), context.combinedOverlay());
             }
             pose.popPose();
         }

@@ -34,6 +34,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -57,7 +58,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.ticks.TickPriority;
 
-public class VirtualSeverLevel extends ServerLevel {
+public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
     private static RegistryAccess REGISTRY_ACCESS = null;
 
@@ -142,9 +143,12 @@ public class VirtualSeverLevel extends ServerLevel {
     @Override public void setCurrentlyGenerating(@Nullable Supplier<String> p_186618_) {}
     @Override public void addWorldGenChunkEntities(@Nonnull Stream<Entity> p_143328_) {}
 
-    public void updateData(ServerLevel level, ContraptionWrapper wrapper) {
-        this.level = level;
+    public void updateData(ContraptionWrapper wrapper, Level level) {
+        if(level instanceof ServerLevel serverLevel)
+            this.level = serverLevel;
         this.wrapper = wrapper;
+
+        for (var tile : wrapper.getBlockEntities()) { tile.setLevel(this); }
     }
 
     @Override public ServerChunkCache getChunkSource() { return level == null ? STATIC_LEVEL.getChunkSource() : level.getChunkSource(); }
@@ -159,8 +163,8 @@ public class VirtualSeverLevel extends ServerLevel {
     }
 
     @Override
-    public void gameEvent(@Nullable Entity entity, @Nonnull GameEvent event, @Nonnull BlockPos blockpo) {
-        // TODO: figure out what this method is supposed to do (there are overloads)
+    public void gameEvent(@Nullable Entity entity, @Nonnull GameEvent event, @Nonnull BlockPos blockpos) {
+        level.gameEvent(entity, event, blockpos);
     }
 
     @Override

@@ -56,13 +56,13 @@ import net.minecraftforge.api.distmarker.OnlyIn;
  * @author KOWI2003
  */
 @OnlyIn(Dist.CLIENT)
-public class VirtualClientLevel extends ClientLevel {
+public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
 
     @Nonnull 
-    private final ContraptionWrapper wrapper;
+    private ContraptionWrapper wrapper;
 
     @Nonnull 
-    private final ClientLevel level;
+    private ClientLevel level;
 
     @Nonnull
     private final Consumer<ContraptionWrapper> onUpdate;
@@ -136,8 +136,6 @@ public class VirtualClientLevel extends ClientLevel {
 
         wrapper.contraption().setBlock(blockpos, state, tile);
         blockEntityChanged(blockpos);
-         
-        onUpdate.accept(wrapper);
 
         markAndNotifyBlock(blockpos, null, oldState, state, p_233645_, p_233646_);
 
@@ -220,6 +218,7 @@ public class VirtualClientLevel extends ClientLevel {
     @Override
     public void sendBlockUpdated(@Nonnull BlockPos blockPos, @Nonnull BlockState oldState, @Nonnull BlockState updatedState, int p_104688_) {
         //TODO: add special update single block/update a set of blocks lambda
+        for (var tile : wrapper.getBlockEntities()) { tile.setLevel(this); }
         onUpdate.accept(wrapper);
     }
 
@@ -333,6 +332,12 @@ public class VirtualClientLevel extends ClientLevel {
         var rotation = new Quaterniond(wrapper.rotation()).conjugate();
         position = MathHelper.rotateVector(position, rotation).add(wrapper.position());
         level.addParticle(particle, p_104715_, position.x, position.y, position.z, p_104719_, p_104720_, p_104721_);
+    }
+
+    public void updateData(ContraptionWrapper wrapper, Level level) {
+        if(level instanceof ClientLevel clientLevel)
+            this.level = clientLevel;
+        this.wrapper = wrapper;
     }
 
 }

@@ -22,6 +22,8 @@ public interface ISyncableEntity {
         save(tag);
         if(level().isClientSide())
             PacketHandler.sendToServer(new PacketSyncEntity(getId(), getUUID(), tag));
+        else 
+            PacketHandler.sendToAllClients(new PacketSyncEntity(getId(), getUUID(), tag), level());
     }
 
 }

@@ -9,6 +9,7 @@ import org.joml.Quaternionfc;
 import kowi2003.core.contraptions.Contraption;
 import kowi2003.core.contraptions.ContraptionHelper;
 import kowi2003.core.contraptions.ContraptionWrapper;
+import kowi2003.core.contraptions.level.IVirtualLevel;
 import kowi2003.core.data.IRotatable;
 import kowi2003.core.entity.CoreEntitySerializers;
 import net.minecraft.client.Minecraft;
@@ -111,15 +112,16 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
         var state = contraption().getState(result.getBlockPos());
 
         if(state != null) {
-          var blockInteractionResult = state.use(contraptionLevel, player, hand, result);
-          applyContraptionChanges();
+          contraptionLevel().blockEntityChanged(result.getBlockPos());
+          var blockInteractionResult = state.use(contraptionLevel(), player, hand, result);
+          if(!level().isClientSide()) applyContraptionChanges();
           if(blockInteractionResult != InteractionResult.FAIL && blockInteractionResult != InteractionResult.PASS)
             return blockInteractionResult;
         }
       }
       
       if(!stack.isEmpty()) {
-        var interactionResult = player.getItemInHand(hand).useOn(new UseOnContext(contraptionLevel, player, hand, stack, result));
+        var interactionResult = player.getItemInHand(hand).useOn(new UseOnContext(contraptionLevel(), player, hand, stack, result));
         applyContraptionChanges();
         return interactionResult;
       }
@@ -212,6 +214,10 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
 
   private void setContraption(Contraption contraption) {
     var hasChanged = this.contraption != contraption;
+    
+    for (var tile : new ContraptionWrapper(contraption, level()).getBlockEntities())
+      tile.setLevel(contraptionLevel());
+
     this.entityData.set(DATA_CONTRAPTION, contraption);
     this.contraption = contraption;
 
@@ -229,11 +235,21 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
     var wrapper = new ContraptionWrapper(contraption, level());
     wrapper.setPosition(position());
     wrapper.setRotation(getRotation());
-    contraptionLevel = wrapper.contraptionLevel(level(), w -> {
-      setContraption(contraption);
-      applyContraptionChanges();
-    });
+
+    if(contraptionLevel instanceof IVirtualLevel virtualLevel)
+      virtualLevel.updateData(wrapper, level());
+    
     return wrapper;
+  }
+
+  private Level contraptionLevel() {
+    if(contraptionLevel == null) {
+      contraptionLevel = contraptionWrapper().contraptionLevel(level(), w -> {
+        setContraption(w.contraption());
+        applyContraptionChanges();
+      });
+    }
+    return contraptionLevel;
   }
 
   /**
