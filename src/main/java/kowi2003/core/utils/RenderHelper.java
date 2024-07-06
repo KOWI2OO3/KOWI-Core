@@ -28,6 +28,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.client.model.data.ModelData;
 
 /**
  * Helper class for rendering contraptions
@@ -101,18 +102,21 @@ public class RenderHelper {
         for (BlockPos blockPosition : wrapper.contraption()) {
             var state = wrapper.getBlockState(blockPosition);
 
-
             pose.pushPose();
             pose.translate(blockPosition.getX() - (int)position.x, blockPosition.getY() - (int)position.y, blockPosition.getZ() - (int)position.z);
 
             // Rending the block model with every rendertype used in the model
             if(state.getRenderShape() != RenderShape.INVISIBLE) {
+
                 var model =  mc.getBlockRenderer().getBlockModel(state);
                 var modelData = model.getModelData(wrapper, blockPosition, state, null);
+                if(modelData == null)
+                    modelData = ModelData.EMPTY;
+
                 randomsource.setSeed(state.getSeed(blockPosition));
                 for (var renderType : model.getRenderTypes(state, randomsource, modelData)) {
                     mc.getBlockRenderer().renderBatched(state, blockPosition, wrapper, pose, context.bufferSource().getBuffer(renderType), 
-                        true, RandomSource.create(), null, renderType);
+                        true, RandomSource.create(), modelData, renderType);
                 }
             }
 
@@ -146,7 +150,7 @@ public class RenderHelper {
         pose.rotateAround(rotation, 0.5f, 0, 0.5f);
         pose.translate(highlightPosition.getX(), highlightPosition.getY(), highlightPosition.getZ());
 
-        var shape = state.getCollisionShape(wrapper, highlightPosition);
+        var shape = state.getShape(wrapper, highlightPosition);
 
         var buffer = context.bufferSource().getBuffer(RenderType.lines());
         LevelRenderer.renderVoxelShape(pose, buffer, shape, 0, 0, 0, 0f, 0f, 0f, 0.5f, false);

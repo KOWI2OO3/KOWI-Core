@@ -1,16 +1,22 @@
 package kowi2003.core.contraptions;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.joml.Quaternionf;
 
+import kowi2003.core.contraptions.level.VirtualClientLevel;
+import kowi2003.core.contraptions.level.VirtualSeverLevel;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
@@ -79,11 +85,14 @@ public class ContraptionWrapper implements BlockAndTintGetter, Iterable<BlockPos
     } 
 
     @Nonnull 
-    public Level contraptionLevel() {
+    public Level contraptionLevel(Level level, Consumer<ContraptionWrapper> onUpdate) {
         // TODO: In case of an linkContraption, return the level of the linked contraption
         // In the other case create a virtual level with the contraption
-        
-        return null;
+
+        if(contraption instanceof ILevelContainer container)
+            return container.level();
+
+        return level.isClientSide() ? new VirtualClientLevel(this, (ClientLevel)level, onUpdate) : new VirtualSeverLevel(this, (ServerLevel)level, onUpdate);
     }
 
     @Override
@@ -130,6 +139,24 @@ public class ContraptionWrapper implements BlockAndTintGetter, Iterable<BlockPos
      */
     public BlockData getBlockData(BlockPos position) {
         return new BlockData(position, getBlockState(position), getBlockEntity(position));
+    }
+
+    /**
+     * Gets all block entities of the given type in the contraption
+     * @param <T> the type of block entity
+     * @param type the type of block entity
+     * @return all block entities of the given type in the contraption
+     */
+    public <T extends BlockEntity> Collection<T> getBlockEntities(Class<T> type) {
+        return contraption().blockEntities.values().stream().filter(type::isInstance).map(type::cast).toList();
+    }
+
+    /**
+     * Gets all block entities in the contraption
+     * @return all block entities in the contraption
+     */
+    public Collection<BlockEntity> getBlockEntities() {
+        return contraption().blockEntities.values();
     }
 
     @Override

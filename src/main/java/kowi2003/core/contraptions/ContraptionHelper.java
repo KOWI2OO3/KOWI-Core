@@ -120,7 +120,7 @@ public class ContraptionHelper {
             var result = wrapper.clipWithInteractionOverride(start, end, blockPos, state.getShape(wrapper, blockPos), state);
             // var result = state.getShape(wrapper, blockPos).clip(start, end, blockPos);
             if(result == null || result.getType() != HitResult.Type.BLOCK) continue;
-            results.put(result.getLocation().subtract(position).lengthSqr(), result);
+            results.put(result.getLocation().subtract(start).lengthSqr(), result);
         }
 
         var min = results.keySet().stream().min(Double::compare).orElse(-1d);

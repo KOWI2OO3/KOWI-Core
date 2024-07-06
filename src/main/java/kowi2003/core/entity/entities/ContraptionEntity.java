@@ -24,19 +24,28 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+/**
+ * An entity that represents a contraption in the world
+ * This entity is used to render and interact with contraptions in the world
+ * 
+ * @author KOWI2003
+ */
 public class ContraptionEntity extends Entity implements IRotatable, ISyncableEntity {
 
   private static final EntityDataAccessor<Quaternionf> DATA_ROTATION = SynchedEntityData.defineId(ContraptionEntity.class, CoreEntitySerializers.QUATERNION);
   private static final EntityDataAccessor<Contraption> DATA_CONTRAPTION = SynchedEntityData.defineId(ContraptionEntity.class, CoreEntitySerializers.CONTRAPTION);
 
   private Contraption contraption;
+  private Level contraptionLevel;
 
   @Nonnull
 	private Quaternionf rotation = new Quaternionf(0, 0, 0, 1);
@@ -94,7 +103,27 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
 
   @Override
   public InteractionResult interact(@Nonnull Player player, @Nonnull InteractionHand hand) {
+    var result = clip(player);
+    if(result != null && result.getType() == HitResult.Type.BLOCK) {
+      var stack = player.getItemInHand(hand);
+      
+      if(!player.isShiftKeyDown()) {
+        var state = contraption().getState(result.getBlockPos());
 
+        if(state != null) {
+          var blockInteractionResult = state.use(contraptionLevel, player, hand, result);
+          applyContraptionChanges();
+          if(blockInteractionResult != InteractionResult.FAIL && blockInteractionResult != InteractionResult.PASS)
+            return blockInteractionResult;
+        }
+      }
+      
+      if(!stack.isEmpty()) {
+        var interactionResult = player.getItemInHand(hand).useOn(new UseOnContext(contraptionLevel, player, hand, stack, result));
+        applyContraptionChanges();
+        return interactionResult;
+      }
+    }
     return super.interact(player, hand);
   }
 
@@ -102,8 +131,7 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
   public boolean hurt(@Nonnull DamageSource source, float damage) {
     var entity = source.getDirectEntity();
     if(entity instanceof Player player) {
-      var cameraPosition = player.position().add(0, player.getEyeY(), 0);
-      var result = ContraptionHelper.clip(contraptionWrapper(), cameraPosition, player.getForward(), (float)player.getBlockReach(), null);
+      var result = clip(player);
       if(result != null && result.getType() == HitResult.Type.BLOCK) {
         contraption().setState(result.getBlockPos(), Blocks.AIR.defaultBlockState());
         applyContraptionChanges();
@@ -201,6 +229,10 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
     var wrapper = new ContraptionWrapper(contraption, level());
     wrapper.setPosition(position());
     wrapper.setRotation(getRotation());
+    contraptionLevel = wrapper.contraptionLevel(level(), w -> {
+      setContraption(contraption);
+      applyContraptionChanges();
+    });
     return wrapper;
   }
 
@@ -227,4 +259,14 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
 
     return rotation;
 	}
+
+  /**
+   * Clips the contraption with the given player
+   * @param player the player to clip with
+   * @return the block hit result
+   */
+  public BlockHitResult clip(Player player) {
+    var cameraPosition = player.getEyePosition();
+    return ContraptionHelper.clip(contraptionWrapper(), cameraPosition, player.getLookAngle(), (float)player.getBlockReach(), null);
+  }
 }
