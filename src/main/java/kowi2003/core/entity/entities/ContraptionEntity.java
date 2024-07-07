@@ -1,17 +1,25 @@
 package kowi2003.core.entity.entities;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 
+import kowi2003.core.contraptions.BlockData;
 import kowi2003.core.contraptions.Contraption;
 import kowi2003.core.contraptions.ContraptionHelper;
 import kowi2003.core.contraptions.ContraptionWrapper;
 import kowi2003.core.contraptions.level.IVirtualLevel;
 import kowi2003.core.data.IRotatable;
 import kowi2003.core.entity.CoreEntitySerializers;
+import kowi2003.core.network.PacketHandler;
+import kowi2003.core.network.packets.entity.PacketSyncBlocks;
+import kowi2003.core.network.packets.entity.PacketSyncContraption;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -217,7 +225,7 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
     sync();
   }
 
-  private void setContraption(Contraption contraption) {
+  public void setContraption(Contraption contraption) {
     var hasChanged = this.contraption != contraption;
     
     for (var tile : new ContraptionWrapper(contraption, level()).getBlockEntities())
@@ -251,8 +259,8 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
     if(contraptionLevel == null) {
       contraptionLevel = contraptionWrapper().contraptionLevel(level(), w -> {
         setContraption(w.contraption());
-        applyContraptionChanges();
-      });
+        syncContraption();
+      }, (wrapper, position) -> syncBlock(position));
     }
     return contraptionLevel;
   }
@@ -289,5 +297,38 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
   public BlockHitResult clip(Player player) {
     var cameraPosition = player.getEyePosition();
     return ContraptionHelper.clip(contraptionWrapper(), cameraPosition, player.getLookAngle(), (float)player.getBlockReach(), null);
+  }
+
+  public void syncContraption() {
+    var level = level();
+    if(level.isClientSide)
+      PacketHandler.sendToServer(new PacketSyncContraption(getId(), getUUID(), contraption()));
+    else
+      PacketHandler.sendToAllClients(new PacketSyncContraption(getId(), getUUID(), contraption()), level);
+  }
+  
+  public void syncBlock(BlockPos position) { syncBlocks(Set.of(position)); }
+  public void syncBlock(BlockData position) { syncBlocks(Set.of(position)); }
+
+  public void syncBlocks(Collection<BlockPos> positions) {
+    var blocks = new HashSet<BlockData>(
+        positions.stream()
+        .map(pos -> new BlockData(pos, contraption().getState(pos), contraption().getBlockEntity(pos)))
+        .toList()
+    );
+
+    var level = level();
+    if(level.isClientSide)
+      PacketHandler.sendToServer(new PacketSyncBlocks(getId(), getUUID(), blocks));
+    else
+      PacketHandler.sendToAllClients(new PacketSyncBlocks(getId(), getUUID(), blocks), level);
+  }
+
+  public void syncBlocks(Set<BlockData> blocks) {
+    var level = level();
+    if(level.isClientSide)
+      PacketHandler.sendToServer(new PacketSyncBlocks(getId(), getUUID(), blocks));
+    else
+      PacketHandler.sendToAllClients(new PacketSyncBlocks(getId(), getUUID(), blocks), level);
   }
 }

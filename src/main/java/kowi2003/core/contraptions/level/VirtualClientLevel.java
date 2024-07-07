@@ -2,6 +2,7 @@ package kowi2003.core.contraptions.level;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -66,6 +67,9 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
 
     @Nonnull
     private final Consumer<ContraptionWrapper> onUpdate;
+    
+    @Nonnull
+    private final BiConsumer<ContraptionWrapper, BlockPos> onBlockUpdate;
 
     /**
      * Creates a new virtual client level for the given contraption wrapper and client level.
@@ -74,12 +78,13 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
      * @param onUpdate the consumer to call when the contraption is updated
      */
     @SuppressWarnings("resource")
-    public VirtualClientLevel(@Nonnull ContraptionWrapper wrapper, @Nonnull ClientLevel level, @Nullable Consumer<ContraptionWrapper> onUpdate) {
+    public VirtualClientLevel(@Nonnull ContraptionWrapper wrapper, @Nonnull ClientLevel level, @Nullable Consumer<ContraptionWrapper> onUpdate, @Nullable BiConsumer<ContraptionWrapper, BlockPos> onBlockUpdate) {
         super(constructDummyPacketListener(), level.getLevelData(), level.dimension(), level.dimensionTypeRegistration(), 1, 1, 
             level.getProfilerSupplier(), Minecraft.getInstance().levelRenderer, level.isDebug(), 1);
         this.level = level;
         this.wrapper = wrapper;
         this.onUpdate = onUpdate == null ? w -> {} : onUpdate;
+        this.onBlockUpdate = onBlockUpdate == null ? (w, p) -> onUpdate.accept(wrapper) : onBlockUpdate;
     }
 
     /**
@@ -88,7 +93,7 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
      * @param level the client level to wrap
      */
     public VirtualClientLevel(ContraptionWrapper wrapper, ClientLevel level) {
-        this(wrapper, level, null);
+        this(wrapper, level, null, null);
     }
     
     @Override public ResourceKey<Level> dimension() { return level.dimension(); }
@@ -137,7 +142,7 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
         wrapper.contraption().setBlock(blockpos, state, tile);
         blockEntityChanged(blockpos);
         markAndNotifyBlock(blockpos, null, oldState, state, p_233645_, p_233646_);
-        onUpdate.accept(wrapper);
+        onBlockUpdate.accept(wrapper, blockpos);
 
         return true;
     }
@@ -156,8 +161,7 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
             return;
 
         tile.setLevel(this);
-        // TODO: Should have tile.setChanged() ??
-        onUpdate.accept(wrapper);
+        onBlockUpdate.accept(wrapper, blockpos);
     }
 
     @Override public @org.jetbrains.annotations.Nullable BlockEntity getExistingBlockEntity(BlockPos pos) { return wrapper.getBlockEntity(pos); }
@@ -208,45 +212,7 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
 
             this.onBlockStateChange(blockpos, oldState, state);
         }
-    }
-
-    
-    @Override
-    public void neighborChanged(@Nonnull BlockState state, @Nonnull BlockPos blockpos, @Nonnull Block block, @Nonnull BlockPos neighborPos,
-            boolean p_215039_) {
-        super.neighborChanged(state, blockpos, block, neighborPos, p_215039_);
-        onUpdate.accept(wrapper);
-    }
-
-    @Override
-    public void neighborChanged(@Nonnull BlockPos blockpos, @Nonnull Block block, @Nonnull BlockPos neighborPos) {
-        super.neighborChanged(blockpos, block, neighborPos);
-        onUpdate.accept(wrapper);
-    }
-
-    @Override
-    public void neighborShapeChanged(@Nonnull Direction side, @Nonnull BlockState state, @Nonnull BlockPos blockpos, @Nonnull BlockPos neighborpos,
-            int p_220389_, int p_220390_) {
-        super.neighborShapeChanged(side, state, blockpos, neighborpos, p_220389_, p_220390_);
-        onUpdate.accept(wrapper);
-    }
-
-    @Override
-    public void updateNeighborsAt(@Nonnull BlockPos blockpos, @Nonnull Block block) {
-        super.updateNeighborsAt(blockpos, block);
-        onUpdate.accept(wrapper);
-    }
-
-    @Override
-    public void updateNeighborsAtExceptFromFacing(@Nonnull BlockPos blockpos, @Nonnull Block block, @Nonnull Direction side) {
-        super.updateNeighborsAtExceptFromFacing(blockpos, block, side);
-        onUpdate.accept(wrapper);
-    }
-
-    @Override
-    public void updateNeighbourForOutputSignal(@Nonnull BlockPos blockpos, @Nonnull Block block) {
-        super.updateNeighbourForOutputSignal(blockpos, block);
-        onUpdate.accept(wrapper);
+        onBlockUpdate.accept(wrapper, blockpos);
     }
 
     @SuppressWarnings("resource")
@@ -256,9 +222,8 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
     
     @Override
     public void sendBlockUpdated(@Nonnull BlockPos blockPos, @Nonnull BlockState oldState, @Nonnull BlockState updatedState, int p_104688_) {
-        //TODO: add special update single block/update a set of blocks lambda
         for (var tile : wrapper.getBlockEntities()) { tile.setLevel(this); }
-        onUpdate.accept(wrapper);
+        onBlockUpdate.accept(wrapper, blockPos);
     }
 
     @Override
@@ -322,32 +287,14 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
         return wrapper == null ? Integer.MAX_VALUE : wrapper.getHeight();
     }
 
-    @Override
-    @SuppressWarnings("unused")
-    public int getMinBuildHeight() {
-        // No real reason for this value I just couldn't use the min value as it would cause log 0 exceptions
-        // if(wrapper == null) return -255; 
-        return -64; 
-        
-		// int min = Integer.MAX_VALUE;
-		// for (BlockPos pos : wrapper)
-		// 	if(pos.getY() < min)
-		// 		min = pos.getY();
-		// return min;
-    }
-    
-    @Override
-    public int getMaxBuildHeight() {
-        return 255;
-    }
+    @Override public int getMinBuildHeight() { return -64; }
+    @Override public int getMaxBuildHeight() { return 255; }
 
     @Override public float getShade(@Nonnull Direction direction, boolean p_104704_) { return wrapper.getShade(direction, p_104704_); }
     @Override public LevelLightEngine getLightEngine() { return wrapper.getLightEngine(); }
 
     @Override
-    public int getBlockTint(@Nonnull BlockPos blockpos, @Nonnull ColorResolver resolver) {
-        return wrapper.getBlockTint(blockpos, resolver);
-    }
+    public int getBlockTint(@Nonnull BlockPos blockpos, @Nonnull ColorResolver resolver) { return wrapper.getBlockTint(blockpos, resolver); }
     
     public ContraptionWrapper contraptionWrapper() { return wrapper; }
     public ClientLevel wrappedLevel() { return level; }

@@ -2,6 +2,8 @@ package kowi2003.core.network;
 
 import java.util.List;
 
+import kowi2003.core.network.packets.entity.PacketSyncBlocks;
+import kowi2003.core.network.packets.entity.PacketSyncContraption;
 import kowi2003.core.network.packets.entity.PacketSyncEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -41,6 +43,18 @@ public class PacketHandler {
 		.encoder(PacketSyncEntity::toBytes)
 		.decoder(PacketSyncEntity::new)
 		.consumerNetworkThread(PacketSyncEntity::handle)
+		.add();
+
+		INSTANCE.messageBuilder(PacketSyncContraption.class, nextID())
+		.encoder(PacketSyncContraption::toBytes)
+		.decoder(PacketSyncContraption::new)
+		.consumerNetworkThread(PacketSyncContraption::handle)
+		.add();
+		
+		INSTANCE.messageBuilder(PacketSyncBlocks.class, nextID())
+		.encoder(PacketSyncBlocks::toBytes)
+		.decoder(PacketSyncBlocks::new)
+		.consumerNetworkThread(PacketSyncBlocks::handle)
 		.add();
 	}
 	

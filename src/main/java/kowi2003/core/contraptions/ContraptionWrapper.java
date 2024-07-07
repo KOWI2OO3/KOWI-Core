@@ -3,6 +3,7 @@ package kowi2003.core.contraptions;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
@@ -85,14 +86,13 @@ public class ContraptionWrapper implements BlockAndTintGetter, Iterable<BlockPos
     } 
 
     @Nonnull 
-    public Level contraptionLevel(Level level, Consumer<ContraptionWrapper> onUpdate) {
-        // TODO: In case of an linkContraption, return the level of the linked contraption
-        // In the other case create a virtual level with the contraption
-
+    public Level contraptionLevel(Level level, Consumer<ContraptionWrapper> onUpdate, BiConsumer<ContraptionWrapper, BlockPos> onBlockUpdate) {
         if(contraption instanceof ILevelContainer container)
             return container.level();
 
-        return level.isClientSide() ? new VirtualClientLevel(this, (ClientLevel)level, onUpdate) : new VirtualSeverLevel(this, (ServerLevel)level, onUpdate);
+        return level.isClientSide() ? 
+            new VirtualClientLevel(this, (ClientLevel)level, onUpdate, onBlockUpdate) : 
+            new VirtualSeverLevel(this, (ServerLevel)level, onUpdate, onBlockUpdate);
     }
 
     @Override

@@ -224,7 +224,6 @@ public class Contraption implements Iterable<BlockPos>, INBTSerializable<Compoun
             if(stateTag == null)
              continue;
             
-            BlockState.CODEC.encode(state, NbtOps.INSTANCE, stateTag);
             blockTag.put("state", stateTag);
 
             // Saving the block entity into the entity tag
