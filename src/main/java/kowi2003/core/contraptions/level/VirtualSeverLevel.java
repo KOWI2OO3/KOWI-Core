@@ -108,14 +108,20 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
     @Override
     public void tick(@Nonnull BooleanSupplier supplier) {
         //TODO: tick contraption
-
-        // tick blocks
         if(isHandlingTick) return;
-
         isHandlingTick = true;
 
+        // Handling block ticks
         blockTicks.tick(getGameTime(), 65536, this::tickBlock);
         runBlockEvents();
+
+        // Handling random ticks
+        for(var blockpos : wrapper) {
+            var state = wrapper.getBlockState(blockpos);
+            if (state.isRandomlyTicking()) {
+                state.randomTick(this, blockpos, this.random);
+            }
+        }
 
         isHandlingTick = false;
     }
@@ -154,8 +160,7 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
     @Override public long getDayTime() { return level.getDayTime(); }
     @Override public long getGameTime() { return level.getGameTime(); }
 
-    @Override
-    public boolean isHandlingTick() { return isHandlingTick; }
+    @Override public boolean isHandlingTick() { return isHandlingTick; }
 
     // We don't handle entities in the virtual levels
     @Override public boolean isPositionEntityTicking(@Nonnull BlockPos blockpos) { return false; }
@@ -233,7 +238,7 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
         wrapper.contraption().setBlock(blockpos, state, tile);
         blockEntityChanged(blockpos);
         markAndNotifyBlock(blockpos, null, oldState, state, p_46607_, p_46608_);
-        onUpdate.accept(wrapper);
+        onBlockUpdate.accept(wrapper, blockpos);
 
         if(!state.isAir())
             addChunkTicker(new ChunkPos(blockpos));
@@ -285,6 +290,15 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
     }
 
     @Override
+    public boolean addFreshEntity(Entity entity) {
+        var position = entity.position();
+        var rotation = new Quaterniond(wrapper.rotation()).conjugate();
+        position = MathHelper.rotateVector(position, rotation).add(wrapper.position());
+        entity.moveTo(position.x(), position.y(), position.z());
+        return level.addFreshEntity(entity);
+    }
+
+    @Override
     public void markAndNotifyBlock(@Nonnull BlockPos blockpos, @Nullable LevelChunk levelchunk, @Nonnull BlockState oldState,
         @Nonnull BlockState updatedState, int p_46607_, int p_46608_) {
         var block = updatedState.getBlock();
@@ -314,6 +328,17 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
             this.onBlockStateChange(blockpos, oldState, state);
         }
+    }
+
+    @Override
+    public void onBlockStateChange(BlockPos blockpos, BlockState oldState, BlockState newState) {
+        super.onBlockStateChange(blockpos, oldState, newState);
+        onBlockUpdate.accept(wrapper, blockpos);
+    }
+
+    @Override
+    public void blockUpdated(BlockPos blockpos, Block block) {
+        super.blockUpdated(blockpos, block);
         onBlockUpdate.accept(wrapper, blockpos);
     }
 
@@ -335,12 +360,11 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
         while(!this.blockEvents.isEmpty()) {
             BlockEventData blockeventdata = this.blockEvents.removeFirst();
             if (this.shouldTickBlocksAt(blockeventdata.pos())) {
-            if (this.doBlockEvent(blockeventdata)) {
-                this.getServer().getPlayerList().broadcast((Player)null, (double)blockeventdata.pos().getX(), (double)blockeventdata.pos().getY(), (double)blockeventdata.pos().getZ(), 64.0D, this.dimension(), new ClientboundBlockEventPacket(blockeventdata.pos(), blockeventdata.block(), blockeventdata.paramA(), blockeventdata.paramB()));
-            }
-            } else {
-            this.blockEventsToReschedule.add(blockeventdata);
-            }
+                if (this.doBlockEvent(blockeventdata)) 
+                    this.getServer().getPlayerList().broadcast((Player)null, (double)blockeventdata.pos().getX(), (double)blockeventdata.pos().getY(), (double)blockeventdata.pos().getZ(), 
+                        64.0D, this.dimension(), new ClientboundBlockEventPacket(blockeventdata.pos(), blockeventdata.block(), blockeventdata.paramA(), blockeventdata.paramB()));
+            } else 
+                this.blockEventsToReschedule.add(blockeventdata);
         }
 
         this.blockEvents.addAll(this.blockEventsToReschedule);

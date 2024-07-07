@@ -26,12 +26,15 @@ public record BlockData(@Nonnull BlockPos position, @Nonnull BlockState state, @
         var tag = new CompoundTag();
         tag.putLong("position", position.asLong());
 
-        var stateTag = BlockState.CODEC.encodeStart(NbtOps.INSTANCE, state).result().orElse(null);
-        if(stateTag == null)
-            throw new IllegalStateException("Failed to serialize block state");
-            
-        tag.put("state", stateTag);
-
+        try {
+            var stateTag = BlockState.CODEC.encodeStart(NbtOps.INSTANCE, state).result().orElse(null);
+            if(stateTag == null)
+                throw new IllegalStateException("Failed to serialize block state");
+            tag.put("state", stateTag);
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+        
         // Saving the block entity into the entity tag
         if(blockEntity() != null) {
             var beTag = blockEntity().saveWithFullMetadata();

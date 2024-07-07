@@ -86,10 +86,10 @@ public class PacketSyncBlocks {
 
     private void handleUpdate(@Nonnull Entity entity) {
         if(entity instanceof ContraptionEntity contraption) {
-            for(var block : blocks)
-                contraption.contraption().setBlock(block.position(), block.state(), block.blockEntity());
+            for(var block : blocks) {
+                if(block != null)
+                   contraption.contraption().setBlock(block.position(), block.state(), block.blockEntity());
+            }
         }
     }
-
-
 }
