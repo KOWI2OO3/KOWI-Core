@@ -1,6 +1,9 @@
 package kowi2003.core.utils;
 
+import java.util.function.Consumer;
+
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.joml.AxisAngle4d;
 import org.joml.Matrix4f;
@@ -70,8 +73,7 @@ public class RenderHelper {
      * @param blocks the blocks to render
      * @param position the position to render the blocks at
      */
-    @SuppressWarnings("null")
-    public static void renderBlocks(RenderContext context, BlockData[] blocks, Vector3f position) {
+    public static void renderBlocks(@Nonnull RenderContext context, BlockData[] blocks, Vector3f position) {
         Minecraft mc = Minecraft.getInstance();
         if(mc.level == null) return;
         
@@ -86,8 +88,7 @@ public class RenderHelper {
      * @param buffersrc the buffer source to render with
      * @param contraption the contraption to render
      */
-    @SuppressWarnings("null")
-    public static void renderContraption(RenderContext context, @Nonnull ContraptionWrapper wrapper) {
+    public static void renderContraption(@Nonnull RenderContext context, @Nonnull ContraptionWrapper wrapper) {
         var mc = Minecraft.getInstance();
         var position = wrapper.position();
         var pose = context.pose();
@@ -99,6 +100,8 @@ public class RenderHelper {
         pose.rotateAround(wrapper.rotation(), 0.5f, 0, 0.5f);
 
         wrapper = prepareWrapper(wrapper);
+        var virtuallevel = wrapper.contraptionLevel(mc.level, null, null);
+
         for (BlockPos blockPosition : wrapper.contraption()) {
             var state = wrapper.getBlockState(blockPosition);
 
@@ -122,6 +125,7 @@ public class RenderHelper {
 
             var blockEntity = wrapper.getBlockEntity(blockPosition);
             if(blockEntity != null) {
+                blockEntity.setLevel(virtuallevel);
                 var renderer = mc.getBlockEntityRenderDispatcher().getRenderer(blockEntity);
                 if(renderer != null)
                     renderer.render(blockEntity, mc.getDeltaFrameTime(), pose, context.bufferSource(), context.combinedLight(), context.combinedOverlay());
@@ -130,6 +134,140 @@ public class RenderHelper {
         }
         pose.popPose();
     }
+
+    /**
+     * Renders the given contraption at the given position
+     * @param pose the pose stack to render with
+     * @param buffersrc the buffer source to render with
+     * @param contraption the contraption to render
+     * @param blockTransform the block transform to apply to the blocks before rendering (applied to each block individually)
+     */
+    public static void renderContraption(@Nonnull RenderContext context, @Nonnull ContraptionWrapper wrapper, @Nullable Consumer<PoseStack> blockTransform) {
+        if(blockTransform == null) blockTransform = (pose) -> {};
+        var mc = Minecraft.getInstance();
+        var position = wrapper.position();
+        var pose = context.pose();
+        
+        var randomsource = RandomSource.create();
+
+        pose.pushPose();
+        pose.translate(position.x, position.y, position.z);
+        pose.rotateAround(wrapper.rotation(), 0.5f, 0, 0.5f);
+
+        wrapper = prepareWrapper(wrapper);
+        var virtuallevel = wrapper.contraptionLevel(mc.level, null, null);
+
+        for (BlockPos blockPosition : wrapper.contraption()) {
+            var state = wrapper.getBlockState(blockPosition);
+
+            pose.pushPose();
+            pose.translate(blockPosition.getX() - (int)position.x, blockPosition.getY() - (int)position.y, blockPosition.getZ() - (int)position.z);
+            blockTransform.accept(pose);
+
+            // Rending the block model with every rendertype used in the model
+            if(state.getRenderShape() != RenderShape.INVISIBLE) {
+
+                var model =  mc.getBlockRenderer().getBlockModel(state);
+                var modelData = model.getModelData(wrapper, blockPosition, state, null);
+                if(modelData == null)
+                    modelData = ModelData.EMPTY;
+
+                randomsource.setSeed(state.getSeed(blockPosition));
+                for (var renderType : model.getRenderTypes(state, randomsource, modelData)) {
+                    mc.getBlockRenderer().renderBatched(state, blockPosition, wrapper, pose, context.bufferSource().getBuffer(renderType), 
+                        true, RandomSource.create(), modelData, renderType);
+                }
+            }
+
+            var blockEntity = wrapper.getBlockEntity(blockPosition);
+            if(blockEntity != null) {
+                blockEntity.setLevel(virtuallevel);
+                var renderer = mc.getBlockEntityRenderDispatcher().getRenderer(blockEntity);
+                if(renderer != null)
+                    renderer.render(blockEntity, mc.getDeltaFrameTime(), pose, context.bufferSource(), context.combinedLight(), context.combinedOverlay());
+            }
+            pose.popPose();
+        }
+        pose.popPose();
+    }
+
+    /**
+     * Renders the given contraption at the given position
+     * <p>
+     * <i>Note: this method is used to force a rendertype onto all blocks, regardless of their model, 
+     * if you want to render the contraption normally use {@link kowi2003.core.utils.RenderHelper#renderContraption(RenderContext, ContraptionWrapper) renderContraption}:</i> 
+     * 
+     * @param pose the pose stack to render with
+     * @param buffersrc the buffer source to render with
+     * @param contraption the contraption to render
+     * @param renderType the render type to render the blocks with (e.g. solid, cutout, cutout_mipped, translucent, or a custom render type)
+     */
+    public static void renderContraption(@Nonnull RenderContext context,  @Nonnull RenderType renderType, @Nonnull ContraptionWrapper wrapper) {
+        renderContraption(context, renderType, wrapper, null);
+    }
+
+    /**
+     * Renders the given contraption at the given position
+     * <p>
+     * Note: this method is used to force a rendertype onto all blocks, regardless of their model, 
+     * if you want to render the contraption normally use {@link kowi2003.core.utils.RenderHelper#renderContraption(RenderContext, ContraptionWrapper) renderContraption} or use 
+     * {@link kowi2003.core.utils.RenderHelper#renderContraption(RenderContext, ContraptionWrapper, Consumer) renderContraption with a block transform} to apply a custom block transform
+     * 
+     * @param pose the pose stack to render with
+     * @param buffersrc the buffer source to render with
+     * @param contraption the contraption to render
+     * @param renderType the render type to render the blocks with (e.g. solid, cutout, cutout_mipped, translucent, or a custom render type)
+     * @param blockTransform the block transform to apply to the blocks before rendering (applied to each block individually)
+     */
+    public static void renderContraption(@Nonnull RenderContext context, @Nonnull RenderType renderType, @Nonnull ContraptionWrapper wrapper, @Nullable Consumer<PoseStack> blockTransform) {
+        if(blockTransform == null) blockTransform = (pose) -> {};
+
+        var mc = Minecraft.getInstance();
+        var position = wrapper.position();
+        var pose = context.pose();
+        
+        var randomsource = RandomSource.create();
+
+        pose.pushPose();
+        pose.translate(position.x, position.y, position.z);
+        pose.rotateAround(wrapper.rotation(), 0.5f, 0, 0.5f);
+
+        wrapper = prepareWrapper(wrapper);
+        var virtuallevel = wrapper.contraptionLevel(mc.level, null, null);
+
+        for (BlockPos blockPosition : wrapper.contraption()) {
+            var state = wrapper.getBlockState(blockPosition);
+
+            pose.pushPose();
+            pose.translate(blockPosition.getX() - (int)position.x, blockPosition.getY() - (int)position.y, blockPosition.getZ() - (int)position.z);
+
+            blockTransform.accept(pose);
+
+            // Rending the block model with every rendertype used in the model
+            if(state.getRenderShape() != RenderShape.INVISIBLE) {
+
+                var model =  mc.getBlockRenderer().getBlockModel(state);
+                var modelData = model.getModelData(wrapper, blockPosition, state, null);
+                if(modelData == null)
+                    modelData = ModelData.EMPTY;
+
+                randomsource.setSeed(state.getSeed(blockPosition));
+                mc.getBlockRenderer().renderBatched(state, blockPosition, wrapper, pose, context.bufferSource().getBuffer(renderType), 
+                    true, RandomSource.create(), modelData, renderType);
+            }
+
+            var blockEntity = wrapper.getBlockEntity(blockPosition);
+            if(blockEntity != null) {
+                blockEntity.setLevel(virtuallevel);
+                var renderer = mc.getBlockEntityRenderDispatcher().getRenderer(blockEntity);
+                if(renderer != null)
+                    renderer.render(blockEntity, mc.getDeltaFrameTime(), pose, context.bufferSource(), context.combinedLight(), context.combinedOverlay());
+            }
+            pose.popPose();
+        }
+        pose.popPose();
+    }
+
 
     /**
      * Renders the highlight shape of the block at the given position
