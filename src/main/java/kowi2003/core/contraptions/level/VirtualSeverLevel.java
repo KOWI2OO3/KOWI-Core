@@ -1,7 +1,10 @@
 package kowi2003.core.contraptions.level;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -14,6 +17,7 @@ import javax.annotation.Nullable;
 
 import org.joml.Quaterniond;
 
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import kowi2003.core.contraptions.ContraptionWrapper;
 import kowi2003.core.utils.MathHelper;
 import net.minecraft.core.BlockPos;
@@ -21,6 +25,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
@@ -32,6 +37,7 @@ import net.minecraft.world.RandomSequences;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
@@ -56,24 +62,30 @@ import net.minecraft.world.level.storage.LevelStorageSource.LevelStorageAccess;
 import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.ticks.LevelChunkTicks;
+import net.minecraft.world.ticks.LevelTicks;
+import net.minecraft.world.ticks.ScheduledTick;
 import net.minecraft.world.ticks.TickPriority;
 
 public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
     private static RegistryAccess REGISTRY_ACCESS = null;
-
     private static ServerLevel STATIC_LEVEL = null;
-
     private static LevelStorageAccess DUMMY_ACCESS = null;
 
     @Nonnull 
     private ContraptionWrapper wrapper;
-
     @Nonnull 
     private ServerLevel level;
-
     @Nonnull
     private final Consumer<ContraptionWrapper> onUpdate;
+
+    private boolean isHandlingTick = false;
+    private final LevelTicks<Block> blockTicks = new LevelTicks<>(this::isPositionTicking, this.getProfilerSupplier());
+    private final Map<ChunkPos, LevelChunkTicks<Block>> chunkTickers = new HashMap<>();
+    
+    private final ObjectLinkedOpenHashSet<BlockEventData> blockEvents = new ObjectLinkedOpenHashSet<>();
+    private final List<BlockEventData> blockEventsToReschedule = new ArrayList<>(64);
 
     public VirtualSeverLevel(ContraptionWrapper wrapper, ServerLevel level, Consumer<ContraptionWrapper> onUpdate) {
         super(level.getServer(), (action) -> action.run(), createDummyAccess(level), (ServerLevelData) level.getLevelData(), level.dimension(), 
@@ -83,11 +95,51 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
         this.wrapper = wrapper;
         this.level = level;
         this.onUpdate = onUpdate == null ? w -> {} : onUpdate;
+
+        for (var blockpos : wrapper) {
+            addChunkTicker(new ChunkPos(blockpos));
+            scheduleTick(blockpos, wrapper.getBlockState(blockpos).getBlock(), 0);
+        }
     }
   
     @Override
     public void tick(@Nonnull BooleanSupplier supplier) {
         //TODO tick contraption
+        // tick blocks
+        if(isHandlingTick) return;
+
+        isHandlingTick = true;
+
+        blockTicks.tick(getGameTime(), 65536, this::tickBlock);
+
+        for (var tickers : chunkTickers.values()) 
+            tickers.getAll().forEach(ScheduledTick::triggerTick);
+
+        runBlockEvents();
+
+        // for (var blockpos : wrapper) {
+        //     tickBlock(blockpos, wrapper.getBlockState(blockpos).getBlock());
+        // }
+
+        onUpdate.accept(wrapper);
+
+        isHandlingTick = false;
+    }
+
+    private void tickBlock(@Nonnull BlockPos blockpos, @Nonnull Block block) {
+        BlockState blockstate = this.getBlockState(blockpos);
+        if (blockstate.is(block))
+           blockstate.tick(this, blockpos, this.random);
+    }
+
+    @Override
+    public LevelTicks<Block> getBlockTicks() {
+        return this.blockTicks;
+    }
+
+    public boolean isPositionTicking(long position) {
+        return true;
+        // return !wrapper.getBlockState(BlockPos.of(position)).isAir();
     }
 
     @Override
@@ -99,12 +151,14 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
     public void tickChunk(@Nonnull LevelChunk chunk, int p_8716_) {
         // TODO: figure out what this method is supposed to do
         // super.tickChunk(p_8715_, p_8716_);
+        System.out.println("ticking chunk?");
     }
 
     @Override
     public void startTickingChunk(@Nonnull LevelChunk chunk) {
         // TODO: figure out what this method is supposed to do
         // super.startTickingChunk(p_184103_);
+        System.out.println("ticking chunk?");
     }
 
     @Override public void tickCustomSpawners(boolean p_8800_, boolean p_8801_) {} // We don't have custom spawners
@@ -122,22 +176,29 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
     @Override public long getGameTime() { return level.getGameTime(); }
 
     @Override
-    public boolean isHandlingTick() { return super.isHandlingTick(); } // TODO: make sure this is correct, assume it is a boolean for when it is in the middle of a tick
+    public boolean isHandlingTick() { return isHandlingTick; }
 
     // We don't handle entities in the virtual levels
     @Override public boolean isPositionEntityTicking(@Nonnull BlockPos blockpos) { return false; }
 
     // TODO: figure out what these methods are supposed to do
-    @Override public void scheduleTick(@Nonnull BlockPos blockpos, @Nonnull Block block, int p_186472_) {}
-	@Override public void scheduleTick(@Nonnull BlockPos blockpos, @Nonnull Block p_186466_, int p_186467_, @Nonnull TickPriority priority) {}
-	@Override public void scheduleTick(@Nonnull BlockPos blockpos, @Nonnull Fluid fluid, int p_186472_) {}
-	@Override public void scheduleTick(@Nonnull BlockPos blockpos, @Nonnull Fluid fluid, int p_186476_, @Nonnull TickPriority priority) {}
-
-    @Override
-    public boolean shouldTickBlocksAt(long position) {
-        return false; //TODO: change such that it depends on block entities?
+    @Override public void scheduleTick(@Nonnull BlockPos blockpos, @Nonnull Block block, int timeout) {
+        super.scheduleTick(blockpos, block, timeout);
+        // System.out.println("Scheduling tick?");
+    }
+	@Override public void scheduleTick(@Nonnull BlockPos blockpos, @Nonnull Block block, int timeout, @Nonnull TickPriority priority) {
+        super.scheduleTick(blockpos, block, timeout, priority);
+        // System.out.println("Scheduling tick?");
     }
 
+	@Override public void scheduleTick(@Nonnull BlockPos blockpos, @Nonnull Fluid fluid, int p_186472_) {
+        System.out.println("Scheduling tick?");
+    }
+	@Override public void scheduleTick(@Nonnull BlockPos blockpos, @Nonnull Fluid fluid, int p_186476_, @Nonnull TickPriority priority) {
+        System.out.println("Scheduling tick?");
+    }
+
+    @Override public boolean shouldTickBlocksAt(long position) { return true; }
     @Override public boolean shouldTickDeath(@Nonnull Entity entity) { return false; }
 
     @Override public void setCurrentlyGenerating(@Nullable Supplier<String> p_186618_) {}
@@ -148,7 +209,8 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
             this.level = serverLevel;
         this.wrapper = wrapper;
 
-        for (var tile : wrapper.getBlockEntities()) { tile.setLevel(this); }
+        for (var blockpos : wrapper)
+            addChunkTicker(new ChunkPos(blockpos));
     }
 
     @Override public ServerChunkCache getChunkSource() { return level == null ? STATIC_LEVEL.getChunkSource() : level.getChunkSource(); }
@@ -193,9 +255,11 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
         wrapper.contraption().setBlock(blockpos, state, tile);
         blockEntityChanged(blockpos);
+        markAndNotifyBlock(blockpos, null, oldState, state, p_46607_, p_46608_);
         onUpdate.accept(wrapper);
 
-        markAndNotifyBlock(blockpos, null, oldState, state, p_46607_, p_46608_);
+        if(!state.isAir())
+            addChunkTicker(new ChunkPos(blockpos));
 
         return true;
     }
@@ -276,6 +340,45 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
             this.onBlockStateChange(blockpos, oldState, state);
         }
+        onUpdate.accept(wrapper);
+    }
+
+    @Override
+    public void neighborChanged(@Nonnull BlockState state, @Nonnull BlockPos blockpos, @Nonnull Block block, @Nonnull BlockPos neighborPos,
+            boolean p_215039_) {
+        super.neighborChanged(state, blockpos, block, neighborPos, p_215039_);
+        onUpdate.accept(wrapper);
+    }
+
+    @Override
+    public void neighborChanged(@Nonnull BlockPos blockpos, @Nonnull Block block, @Nonnull BlockPos neighborPos) {
+        super.neighborChanged(blockpos, block, neighborPos);
+        onUpdate.accept(wrapper);
+    }
+
+    @Override
+    public void neighborShapeChanged(@Nonnull Direction side, @Nonnull BlockState state, @Nonnull BlockPos blockpos, @Nonnull BlockPos neighborpos,
+            int p_220389_, int p_220390_) {
+        super.neighborShapeChanged(side, state, blockpos, neighborpos, p_220389_, p_220390_);
+        onUpdate.accept(wrapper);
+    }
+
+    @Override
+    public void updateNeighborsAt(@Nonnull BlockPos blockpos, @Nonnull Block block) {
+        super.updateNeighborsAt(blockpos, block);
+        onUpdate.accept(wrapper);
+    }
+
+    @Override
+    public void updateNeighborsAtExceptFromFacing(@Nonnull BlockPos blockpos, @Nonnull Block block, @Nonnull Direction side) {
+        super.updateNeighborsAtExceptFromFacing(blockpos, block, side);
+        onUpdate.accept(wrapper);
+    }
+
+    @Override
+    public void updateNeighbourForOutputSignal(@Nonnull BlockPos blockpos, @Nonnull Block block) {
+        super.updateNeighbourForOutputSignal(blockpos, block);
+        onUpdate.accept(wrapper);
     }
 
     @Override public RegistryAccess registryAccess() { return level == null ? REGISTRY_ACCESS : level.registryAccess(); }
@@ -286,6 +389,33 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
         // TODO: use specific single/set of blocks update method
         onUpdate.accept(wrapper);
     }
+
+    public void blockEvent(@Nonnull BlockPos blockpos, @Nonnull Block block, int p_8748_, int p_8749_) {
+        this.blockEvents.add(new BlockEventData(blockpos, block, p_8748_, p_8749_));
+    }
+
+    private void runBlockEvents() {
+      this.blockEventsToReschedule.clear();
+
+      while(!this.blockEvents.isEmpty()) {
+         BlockEventData blockeventdata = this.blockEvents.removeFirst();
+         if (this.shouldTickBlocksAt(blockeventdata.pos())) {
+            if (this.doBlockEvent(blockeventdata)) {
+               this.getServer().getPlayerList().broadcast((Player)null, (double)blockeventdata.pos().getX(), (double)blockeventdata.pos().getY(), (double)blockeventdata.pos().getZ(), 64.0D, this.dimension(), new ClientboundBlockEventPacket(blockeventdata.pos(), blockeventdata.block(), blockeventdata.paramA(), blockeventdata.paramB()));
+            }
+         } else {
+            this.blockEventsToReschedule.add(blockeventdata);
+         }
+      }
+
+      this.blockEvents.addAll(this.blockEventsToReschedule);
+   }
+
+   private boolean doBlockEvent(BlockEventData p_8699_) {
+      BlockState blockstate = this.getBlockState(p_8699_.pos());
+      return blockstate.is(p_8699_.block()) ? blockstate.triggerEvent(this, p_8699_.pos(), p_8699_.paramA(), p_8699_.paramB()) : false;
+   }
+
 
     @Override
     public void playSound(@Nullable Player player, double x, double y, double z,
@@ -359,6 +489,14 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
     }
 
     public void update() { onUpdate.accept(wrapper); }
+
+    private void addChunkTicker(ChunkPos chunkPos) {
+        if(!chunkTickers.containsKey(chunkPos)) {
+            var ticker = new LevelChunkTicks<Block>();
+            chunkTickers.put(chunkPos, ticker);
+            blockTicks.addContainer(chunkPos, ticker);
+        }
+    }
 
     private static final ChunkProgressListener constructDummyProgressListener() {
         return new ChunkProgressListener() {

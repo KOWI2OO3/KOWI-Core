@@ -136,8 +136,8 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
 
         wrapper.contraption().setBlock(blockpos, state, tile);
         blockEntityChanged(blockpos);
-
         markAndNotifyBlock(blockpos, null, oldState, state, p_233645_, p_233646_);
+        onUpdate.accept(wrapper);
 
         return true;
     }
@@ -204,13 +204,52 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
                 oldState.updateIndirectNeighbourShapes(this, blockpos, i, p_46608_ - 1);
                 updatedState.updateNeighbourShapes(this, blockpos, i, p_46608_ - 1);
                 updatedState.updateIndirectNeighbourShapes(this, blockpos, i, p_46608_ - 1);
-                }
+            }
 
-                this.onBlockStateChange(blockpos, oldState, state);
+            this.onBlockStateChange(blockpos, oldState, state);
         }
     }
 
-    @SuppressWarnings("null")
+    
+    @Override
+    public void neighborChanged(@Nonnull BlockState state, @Nonnull BlockPos blockpos, @Nonnull Block block, @Nonnull BlockPos neighborPos,
+            boolean p_215039_) {
+        super.neighborChanged(state, blockpos, block, neighborPos, p_215039_);
+        onUpdate.accept(wrapper);
+    }
+
+    @Override
+    public void neighborChanged(@Nonnull BlockPos blockpos, @Nonnull Block block, @Nonnull BlockPos neighborPos) {
+        super.neighborChanged(blockpos, block, neighborPos);
+        onUpdate.accept(wrapper);
+    }
+
+    @Override
+    public void neighborShapeChanged(@Nonnull Direction side, @Nonnull BlockState state, @Nonnull BlockPos blockpos, @Nonnull BlockPos neighborpos,
+            int p_220389_, int p_220390_) {
+        super.neighborShapeChanged(side, state, blockpos, neighborpos, p_220389_, p_220390_);
+        onUpdate.accept(wrapper);
+    }
+
+    @Override
+    public void updateNeighborsAt(@Nonnull BlockPos blockpos, @Nonnull Block block) {
+        super.updateNeighborsAt(blockpos, block);
+        onUpdate.accept(wrapper);
+    }
+
+    @Override
+    public void updateNeighborsAtExceptFromFacing(@Nonnull BlockPos blockpos, @Nonnull Block block, @Nonnull Direction side) {
+        super.updateNeighborsAtExceptFromFacing(blockpos, block, side);
+        onUpdate.accept(wrapper);
+    }
+
+    @Override
+    public void updateNeighbourForOutputSignal(@Nonnull BlockPos blockpos, @Nonnull Block block) {
+        super.updateNeighbourForOutputSignal(blockpos, block);
+        onUpdate.accept(wrapper);
+    }
+
+    @SuppressWarnings("resource")
     @Override public RegistryAccess registryAccess() { return level == null ? Minecraft.getInstance().level.registryAccess() : level.registryAccess(); }
     @Override public List<AbstractClientPlayer> players() { return level.players(); } //TODO: change to players in contraption?
     @Override public Holder<Biome> getUncachedNoiseBiome(int x, int y, int z) { return level.getUncachedNoiseBiome(x, y, z); }

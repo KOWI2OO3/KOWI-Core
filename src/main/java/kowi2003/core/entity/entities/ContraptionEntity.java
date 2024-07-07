@@ -17,6 +17,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -162,6 +163,10 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
   @Override
   public void tick() {
       super.tick();
+
+      var level = level();
+      if(!level.isClientSide && contraptionLevel instanceof ServerLevel serverLevel)
+        serverLevel.tick(() -> false);
   }
 
   @Override
