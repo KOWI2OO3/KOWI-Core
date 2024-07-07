@@ -84,7 +84,7 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
         this.level = level;
         this.wrapper = wrapper;
         this.onUpdate = onUpdate == null ? w -> {} : onUpdate;
-        this.onBlockUpdate = onBlockUpdate == null ? (w, p) -> onUpdate.accept(wrapper) : onBlockUpdate;
+        this.onBlockUpdate = onBlockUpdate == null ? (w, p) -> this.onUpdate.accept(wrapper) : onBlockUpdate;
     }
 
     /**

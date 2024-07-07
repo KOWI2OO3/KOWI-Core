@@ -122,8 +122,12 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
     private void tickBlock(@Nonnull BlockPos blockpos, @Nonnull Block block) {
         BlockState blockstate = this.getBlockState(blockpos);
-        if (blockstate.is(block))
+        if (blockstate.is(block)) {
+            var tile = getBlockEntity(blockpos);
+            if(tile != null) tile.setLevel(this);
+
             blockstate.tick(this, blockpos, this.random);
+        }
     }
 
     @Override public LevelTicks<Block> getBlockTicks() { return this.blockTicks; }
