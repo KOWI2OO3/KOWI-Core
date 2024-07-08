@@ -3,11 +3,13 @@
   "package": "KOWI2003.Core.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
-    "contraptions.PlayerMixin"
+    "contraptions.PlayerMixin",
+    "contraptions.ServerPlayerMixin"
 
   ],
   "server":[
-    "contraptions.PlayerMixin"
+    "contraptions.PlayerMixin",
+    "contraptions.ServerPlayerMixin"
 
   ],
   "injectors": {

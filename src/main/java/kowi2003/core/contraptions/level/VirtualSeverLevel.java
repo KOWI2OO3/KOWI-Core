@@ -113,7 +113,7 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
     @Override
     public void tick(@Nonnull BooleanSupplier supplier) {
         if(isHandlingTick) return;
-        isHandlingTick = true;
+        isHandlingTick = true; 
 
         // Handling block ticks
         blockTicks.tick(getGameTime(), 65536, this::tickBlock);
@@ -413,6 +413,9 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
     // TODO: maybe only get entities inside the contraption
     @Override public LevelEntityGetter<Entity> getEntities() { return level.getEntities(); }
+
+    @Override
+    public boolean mayInteract(@Nonnull Player player, @Nonnull BlockPos blockpos) { return true; }
 
     @Override
     @SuppressWarnings("unchecked")

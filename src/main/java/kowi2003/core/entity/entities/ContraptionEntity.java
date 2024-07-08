@@ -36,7 +36,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -143,13 +142,14 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
     var entity = source.getDirectEntity();
     if(entity instanceof Player player) {
       var result = clip(player);
-      if(result != null && result.getType() == HitResult.Type.BLOCK) {
-        contraption().setState(result.getBlockPos(), Blocks.AIR.defaultBlockState());
-        applyContraptionChanges();
-        return true;
+      if(result != null && result.getType() == HitResult.Type.BLOCK && !level().isClientSide()) {
+        // contraption().setState(result.getBlockPos(), Blocks.AIR.defaultBlockState());
+        if(contraptionLevel().destroyBlock(result.getBlockPos(), true, player))
+          applyContraptionChanges();
+        return false;
       }
     }
-    return true;
+    return false;
   }
 
   @Override
@@ -314,6 +314,7 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
     var blocks = new HashSet<BlockData>(
         positions.stream()
         .map(pos -> new BlockData(pos, contraption().getState(pos), contraption().getBlockEntity(pos)))
+        .filter(blockdata -> blockdata.state() != null)
         .toList()
     );
 
