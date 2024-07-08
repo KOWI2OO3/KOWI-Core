@@ -215,7 +215,7 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
         onBlockUpdate.accept(wrapper, blockpos);
     }
 
-    @SuppressWarnings("resource")
+    @SuppressWarnings("null")
     @Override public RegistryAccess registryAccess() { return level == null ? Minecraft.getInstance().level.registryAccess() : level.registryAccess(); }
     @Override public List<AbstractClientPlayer> players() { return level.players(); } //TODO: change to players in contraption?
     @Override public Holder<Biome> getUncachedNoiseBiome(int x, int y, int z) { return level.getUncachedNoiseBiome(x, y, z); }

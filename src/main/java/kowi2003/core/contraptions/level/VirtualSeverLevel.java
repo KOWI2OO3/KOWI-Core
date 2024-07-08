@@ -67,6 +67,11 @@ import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.LevelTicks;
 import net.minecraft.world.ticks.TickPriority;
 
+/**
+ * A virtual server level that is used to simulate contraptions in a server level.
+ * 
+ * @author KOWI2003
+ */
 public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
     private static RegistryAccess REGISTRY_ACCESS = null;
@@ -107,7 +112,6 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
   
     @Override
     public void tick(@Nonnull BooleanSupplier supplier) {
-        //TODO: tick contraption
         if(isHandlingTick) return;
         isHandlingTick = true;
 
@@ -122,6 +126,8 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
                 state.randomTick(this, blockpos, this.random);
             }
         }
+
+        tickBlockEntities();
 
         isHandlingTick = false;
     }
@@ -214,7 +220,6 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
     @Override
     public boolean setBlock(@Nonnull BlockPos blockpos, @Nonnull BlockState state, int p_46607_, int p_46608_) {
         var oldState = getBlockState(blockpos);
-
         var block = state.getBlock();
         
         if(oldState.hasBlockEntity()) {
@@ -290,7 +295,7 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
     }
 
     @Override
-    public boolean addFreshEntity(Entity entity) {
+    public boolean addFreshEntity(@Nonnull Entity entity) {
         var position = entity.position();
         var rotation = new Quaterniond(wrapper.rotation()).conjugate();
         position = MathHelper.rotateVector(position, rotation).add(wrapper.position());
@@ -331,13 +336,13 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
     }
 
     @Override
-    public void onBlockStateChange(BlockPos blockpos, BlockState oldState, BlockState newState) {
+    public void onBlockStateChange(@Nonnull BlockPos blockpos, @Nonnull BlockState oldState, @Nonnull BlockState newState) {
         super.onBlockStateChange(blockpos, oldState, newState);
         onBlockUpdate.accept(wrapper, blockpos);
     }
 
     @Override
-    public void blockUpdated(BlockPos blockpos, Block block) {
+    public void blockUpdated(@Nonnull BlockPos blockpos, @Nonnull Block block) {
         super.blockUpdated(blockpos, block);
         onBlockUpdate.accept(wrapper, blockpos);
     }
@@ -413,7 +418,7 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
     @SuppressWarnings("unchecked")
     public <T extends BlockEntity> Optional<T> getBlockEntity(@Nonnull BlockPos blockpos, @Nonnull BlockEntityType<T> type) {
         var tile = getBlockEntity(blockpos);
-        return tile.getType() == type ? Optional.of((T)tile) : Optional.empty();
+        return tile != null && tile.getType() == type ? Optional.of((T)tile) : Optional.empty();
     }
 
     @Override public int getHeight() { return wrapper.getHeight(); }
