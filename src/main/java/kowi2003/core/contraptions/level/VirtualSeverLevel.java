@@ -44,7 +44,6 @@ import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
@@ -219,36 +218,61 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
     @Override
     public boolean setBlock(@Nonnull BlockPos blockpos, @Nonnull BlockState state, int p_46607_, int p_46608_) {
-        var oldState = getBlockState(blockpos);
-        var block = state.getBlock();
-        
-        if(oldState.hasBlockEntity()) {
-            if(!level.isClientSide())
-                oldState.onRemove(this, blockpos, oldState, false);
-            if(!oldState.is(block) || !state.hasBlockEntity()) 
-                removeBlockEntity(blockpos);
-        }
+        Block block = state.getBlock();
+        blockpos = blockpos.immutable(); // Forge - prevent mutable BlockPos leaks
+        BlockState old = getBlockState(blockpos);
 
-        BlockEntity tile = null;
-        if(state.hasBlockEntity()) {
-            if(block instanceof EntityBlock entityBlock)
-                tile = entityBlock.newBlockEntity(blockpos, state);
+        // Still have no clue what this is, but it's required for updating
+        var flag = (p_46607_ & 64) != 0;
 
-            if(tile != null) {
-                tile.setLevel(this);
-                tile.clearRemoved();
-            }
-        }
+        wrapper.contraption().setState(blockpos, state);
+        boolean doesOldHaveTile = old.hasBlockEntity();
+        if (!this.level.isClientSide)
+            old.onRemove(this, blockpos, state, flag);
+        else if ((!old.is(block) || !state.hasBlockEntity()) && doesOldHaveTile) 
+            this.removeBlockEntity(blockpos);
 
-        wrapper.contraption().setBlock(blockpos, state, tile);
-        blockEntityChanged(blockpos);
-        markAndNotifyBlock(blockpos, null, oldState, state, p_46607_, p_46608_);
-        onBlockUpdate.accept(wrapper, blockpos);
+        if (!this.level.isClientSide)
+            state.onPlace(this, blockpos, old, flag);
+
+        // TODO: add blockentities
+            
+        this.markAndNotifyBlock(blockpos, null, old, state, p_46607_, p_46608_);
 
         if(!state.isAir())
             addChunkTicker(new ChunkPos(blockpos));
 
         return true;
+        // var oldState = getBlockState(blockpos);
+        // var block = state.getBlock();
+        
+        // if(oldState.hasBlockEntity()) {
+        //     if(!level.isClientSide())
+        //         oldState.onRemove(this, blockpos, oldState, false);
+        //     if(!oldState.is(block) || !state.hasBlockEntity()) 
+        //         removeBlockEntity(blockpos);
+        // }
+
+        // BlockEntity tile = null;
+        // if(state.hasBlockEntity()) {
+        //     if(block instanceof EntityBlock entityBlock)
+        //         tile = entityBlock.newBlockEntity(blockpos, state);
+
+        //     if(tile != null) {
+        //         tile.setLevel(this);
+        //         tile.clearRemoved();
+        //     }
+        // }
+
+        // wrapper.contraption().setBlock(blockpos, state, tile);
+        // blockEntityChanged(blockpos);
+        // markAndNotifyBlock(blockpos, null, oldState, state, p_46607_, p_46608_);
+        // onBlockUpdate.accept(wrapper, blockpos);
+
+        // if(!state.isAir())
+        //     addChunkTicker(new ChunkPos(blockpos));
+
+        // return true;
     }
 
     @Override
@@ -305,33 +329,38 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
     @Override
     public void markAndNotifyBlock(@Nonnull BlockPos blockpos, @Nullable LevelChunk levelchunk, @Nonnull BlockState oldState,
-        @Nonnull BlockState updatedState, int p_46607_, int p_46608_) {
-        var block = updatedState.getBlock();
-        var state = getBlockState(blockpos);
+            @Nonnull BlockState updatedState, int p_46607_, int p_46608_) {
+        Block block = updatedState.getBlock();
+        BlockState blockstate1 = getBlockState(blockpos);
+        {
+            {
+                if (blockstate1 == updatedState) {
+                    if (oldState != blockstate1) {
+                        this.setBlocksDirty(blockpos, oldState, blockstate1);
+                    }
 
-        if(state == updatedState) {
-            if(oldState != updatedState)
-                setBlocksDirty(blockpos, oldState, updatedState);
+                    if ((p_46607_ & 2) != 0 && (!this.isClientSide || (p_46607_ & 4) == 0) && this.isClientSide) {
+                        this.sendBlockUpdated(blockpos, oldState, updatedState, p_46607_);
+                    }
 
-            if ((p_46607_ & 2) != 0 && (!this.isClientSide || (p_46607_ & 4) == 0)) {
-                this.sendBlockUpdated(blockpos, oldState, updatedState, p_46607_);
-            }
+                    if ((p_46607_ & 1) != 0) {
+                        this.blockUpdated(blockpos, oldState.getBlock());
+                        if (!this.isClientSide && updatedState.hasAnalogOutputSignal()) {
+                            this.updateNeighbourForOutputSignal(blockpos, block);
+                        }
+                    }
 
-            if ((p_46607_ & 1) != 0) {
-                this.blockUpdated(blockpos, oldState.getBlock());
-                if (!this.isClientSide && updatedState.hasAnalogOutputSignal()) {
-                    this.updateNeighbourForOutputSignal(blockpos, block);
+                    if ((p_46607_ & 16) == 0 && p_46608_ > 0) {
+                        int i = p_46607_ & -34;
+                        oldState.updateIndirectNeighbourShapes(this, blockpos, i, p_46608_ - 1);
+                        updatedState.updateNeighbourShapes(this, blockpos, i, p_46608_ - 1);
+                        updatedState.updateIndirectNeighbourShapes(this, blockpos, i, p_46608_ - 1);
+                    }
+
+                    this.onBlockStateChange(blockpos, oldState, blockstate1);
+                    updatedState.onBlockStateChange(this, blockpos, oldState);
                 }
             }
-
-            if ((p_46607_ & 16) == 0 && p_46608_ > 0) {
-                int i = p_46607_ & -34;
-                oldState.updateIndirectNeighbourShapes(this, blockpos, i, p_46608_ - 1);
-                updatedState.updateNeighbourShapes(this, blockpos, i, p_46608_ - 1);
-                updatedState.updateIndirectNeighbourShapes(this, blockpos, i, p_46608_ - 1);
-            }
-
-            this.onBlockStateChange(blockpos, oldState, state);
         }
     }
 
