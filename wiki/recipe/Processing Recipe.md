@@ -31,6 +31,23 @@ This is minimal implementation of a processing recipe.
 - *the matches method is left empty as this is where you would define your own custom matching logic.* 
 - *The container supplier in the matches is only the item container.*
 
+
+### Example of Registring MyProcessingRecipe
+The example is a simplified and modified version of the example found in the [recipe registry](Recipe%20Registry.md#usage-example). This version is used to display how to specifically register the class defined in the previous segment, `MyProcessingRecipe`.
+```java
+public class ModRecipeTypes {
+    // Creating the custom instance of the recipe registry
+    static final RecipeRegistry REGISTRY = new RecipeRegistry(Reference.MODID);
+
+    // Registring the custom recipe types, this is assuming you have a class myRecipeSerializer 
+    // which is a recipe serializer extended from the minecraft RecipeSerializer class
+
+    // registring our custom processing recipe
+    static final IRecipeTypeInfo myProcessingRecipeType = REGISTRY.register(new ResourceLocation(Reference.MODID, "myProcessingRecipeType"),  MyProcessingRecipe::new);
+}
+```
+As our constructor of the `MyProcessingRecipe` takes the `ProcessingRecipeParams` as parameter we can use the constructor directly as a the factory for the processing recipe. (noted by `MyProcessingRecipe::new`)
+
 ### Custom Recipe Checking
 
 #### Only Fluid Matching 
