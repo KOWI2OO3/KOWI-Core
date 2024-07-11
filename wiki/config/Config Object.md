@@ -4,7 +4,7 @@ In summary the object configs is a system to use java object classes as a config
 
 ## Implementing a simple config object
 
-### Regstering the Config Object
+### Registering the Config Object
 Using a class to define configs can be done as followed.
 Imagine we want a config with two values in it, this being the configValue, as an float, and useExperimental, as an boolean. We would define it as followed:
 ```java

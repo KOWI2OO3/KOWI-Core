@@ -1,6 +1,6 @@
 # Item Capabilities
 
-Wanting to make items that can store energy, fluid or items? then you need capabilities, just like how blocks work, but with items it works a bit different. To make it easier the core supports an easy interface to get items that can storge the basics, eg. energy, fluid and/or items.
+Want to make items that can store energy, fluid or items? then you need capabilities, just like how blocks work, but with items it works a bit different. To make it easier the core supports an easy interface to get items that can storge the basics, eg. energy, fluid and/or items.
 
 * Note that all of the interfaces described below are stackable on an item
     * which means an item can contain any combination of the capabilities, for example: energy and fluid or fluid and items or energy and items etc.
