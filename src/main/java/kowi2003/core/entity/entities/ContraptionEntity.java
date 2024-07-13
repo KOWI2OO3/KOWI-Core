@@ -130,7 +130,7 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
       
       if(!stack.isEmpty()) {
         var interactionResult = player.getItemInHand(hand).useOn(new UseOnContext(contraptionLevel(), player, hand, stack, result));
-        applyContraptionChanges();
+        if(!level().isClientSide()) applyContraptionChanges();
         return interactionResult;
       }
     }
