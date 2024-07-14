@@ -21,6 +21,7 @@ import kowi2003.core.network.PacketHandler;
 import kowi2003.core.network.packets.entity.PacketSyncBlocks;
 import kowi2003.core.network.packets.entity.PacketSyncContraption;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -41,6 +42,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * An entity that represents a contraption in the world
@@ -175,6 +178,19 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
       var level = level();
       if(!level.isClientSide && contraptionLevel instanceof ServerLevel serverLevel)
         serverLevel.tick(() -> false);
+
+      if(level.isClientSide)
+        handleClientTick();
+  }
+
+  @OnlyIn(Dist.CLIENT)
+  private void handleClientTick() {
+    if(contraptionLevel instanceof ClientLevel clientLevel) {
+      var mc = Minecraft.getInstance();
+      var player = mc.player;
+      if(player != null)
+        clientLevel.animateTick(player.getBlockX() - getBlockX(), player.getBlockY() - getBlockY(), player.getBlockZ() - getBlockZ());
+    }
   }
 
   @Override

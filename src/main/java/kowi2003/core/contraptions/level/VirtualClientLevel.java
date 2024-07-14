@@ -326,4 +326,12 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
         this.wrapper = wrapper;
     }
 
+    @Override
+    public Holder<Biome> getBiome(@Nonnull BlockPos blockpos) {
+        var position = new Vec3(blockpos.getX(), blockpos.getY(), blockpos.getZ());
+        var rotation = new Quaterniond(wrapper.rotation()).conjugate();
+        position = MathHelper.rotateVector(position, rotation).add(wrapper.position());
+        return level.getBiome(new BlockPos((int)position.x, (int)position.y, (int)position.z));
+    }
+
 }

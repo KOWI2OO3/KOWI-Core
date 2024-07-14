@@ -26,11 +26,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -443,6 +447,46 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
         level.playSound(player, position.x, position.y, position.z, sound, source, volume, pitch);
     }
+
+    @Override
+    public <T extends ParticleOptions> int sendParticles(@Nonnull T p_8768_, double p_8769_, double p_8770_, double p_8771_, int p_8772_, double p_8773_, double p_8774_, double p_8775_, double p_8776_) {
+      ClientboundLevelParticlesPacket clientboundlevelparticlespacket = new ClientboundLevelParticlesPacket(p_8768_, false, p_8769_, p_8770_, p_8771_, (float)p_8773_, (float)p_8774_, (float)p_8775_, (float)p_8776_, p_8772_);
+      int i = 0;
+
+      var players = this.level.getPlayers((p) -> true);
+      for(int j = 0; j < players.size(); ++j) {
+         ServerPlayer serverplayer = players.get(j);
+         if (this.sendParticles(serverplayer, false, p_8769_, p_8770_, p_8771_, clientboundlevelparticlespacket)) {
+            ++i;
+         }
+      }
+
+      return i;
+   }
+
+    @Override
+   public <T extends ParticleOptions> boolean sendParticles(@Nonnull ServerPlayer p_8625_, @Nonnull T p_8626_, boolean p_8627_, double p_8628_, double p_8629_, double p_8630_, int p_8631_, double p_8632_, double p_8633_, double p_8634_, double p_8635_) {
+      Packet<?> packet = new ClientboundLevelParticlesPacket(p_8626_, p_8627_, p_8628_, p_8629_, p_8630_, (float)p_8632_, (float)p_8633_, (float)p_8634_, (float)p_8635_, p_8631_);
+      return this.sendParticles(p_8625_, p_8627_, p_8628_, p_8629_, p_8630_, packet);
+   }
+
+   private boolean sendParticles(@Nonnull ServerPlayer p_8637_, boolean p_8638_, double x, double y, double z, Packet<?> p_8642_) {
+      if (p_8637_.level() != this.level) {
+         return false;
+      } else {
+        var position = new Vec3(x, y, z);
+        var rotation = new Quaterniond(wrapper.rotation()).conjugate();
+        position = MathHelper.rotateVector(position, rotation).add(wrapper.position());
+
+         BlockPos blockpos = p_8637_.blockPosition();
+         if (blockpos.closerToCenterThan(position, p_8638_ ? 512.0D : 32.0D)) {
+            p_8637_.connection.send(p_8642_);
+            return true;
+         } else {
+            return false;
+         }
+      }
+   }
 
     @Override public String gatherChunkSourceStats() { return null; }
 
