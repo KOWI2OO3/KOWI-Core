@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import org.joml.Quaterniond;
 
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+import kowi2003.core.contraptions.ContraptionHelper;
 import kowi2003.core.contraptions.ContraptionWrapper;
 import kowi2003.core.utils.MathHelper;
 import net.minecraft.core.BlockPos;
@@ -34,6 +35,7 @@ import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ProgressListener;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.RandomSequences;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -41,9 +43,11 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
@@ -123,9 +127,9 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
                     // Updating the randValue normally done on the getBlockRandomPos method
                     randValue = randValue * 3 + 1013904223;
                     var blockpos = region.getRandomBlockPos(randValue);
-            var state = wrapper.getBlockState(blockpos);
-            if (state.isRandomlyTicking()) {
-                state.randomTick(this, blockpos, this.random);
+                    var state = wrapper.getBlockState(blockpos);
+                    if (state.isRandomlyTicking()) {
+                        state.randomTick(this, blockpos, this.random);
                     }
                 }
             }
@@ -240,8 +244,20 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
         if (!this.level.isClientSide)
             state.onPlace(this, blockpos, old, flag);
 
-        // TODO: add blockentities
-            
+        // Setting block entity
+        if(state.hasBlockEntity() && block instanceof EntityBlock entityBlock) {
+            if(this.getBlockEntity(blockpos) != null)
+                removeBlockEntity(blockpos);
+            var blockentity = entityBlock.newBlockEntity(blockpos, state);
+            if(blockentity != null) {
+                this.setBlockEntity(blockentity);
+                
+                // Register Game event listeners
+                
+            }
+            //TODO: add block entity ticker
+        }
+
         this.markAndNotifyBlock(blockpos, null, old, state, p_46607_, p_46608_);
 
         if(!state.isAir())

@@ -87,8 +87,18 @@ public class PacketSyncBlocks {
     private void handleUpdate(@Nonnull Entity entity) {
         if(entity instanceof ContraptionEntity contraption) {
             for(var block : blocks) {
-                if(block != null)
-                   contraption.contraption().setBlock(block.position(), block.state(), block.blockEntity());
+                if(block != null) {
+                    contraption.contraption().setState(block.position(), block.state());
+                
+                    if(block.blockEntity() != null) {
+                        var existingTile = contraption.contraption().getBlockEntity(block.position());
+                        if(existingTile != null && existingTile.getClass() == block.blockEntity().getClass()) {
+                            existingTile.load(block.blockEntity().serializeNBT());
+                        }else
+                            contraption.contraption().setBlockEntity(block.position(), block.blockEntity());
+                    }else
+                        contraption.contraption().removeBlockEntity(block.position());
+                }
             }
         }
     }
