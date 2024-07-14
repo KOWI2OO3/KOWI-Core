@@ -93,6 +93,8 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
     private final ObjectLinkedOpenHashSet<BlockEventData> blockEvents = new ObjectLinkedOpenHashSet<>();
     private final List<BlockEventData> blockEventsToReschedule = new ArrayList<>(64);
 
+    private int randValue = RandomSource.create().nextInt();
+
     public VirtualSeverLevel(ContraptionWrapper wrapper, ServerLevel level, Consumer<ContraptionWrapper> onUpdate, BiConsumer<ContraptionWrapper, BlockPos> onBlockUpdate) {
         super(level.getServer(), (action) -> action.run(), createDummyAccess(level), (ServerLevelData) level.getLevelData(), level.dimension(), 
             level.registryAccess().registryOrThrow(Registries.LEVEL_STEM).get(LevelStem.OVERWORLD),
@@ -102,11 +104,6 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
         this.level = level;
         this.onUpdate = onUpdate == null ? w -> {} : onUpdate;
         this.onBlockUpdate = onBlockUpdate == null ? (w, p) -> onUpdate.accept(wrapper) : onBlockUpdate;
-
-        for (var blockpos : wrapper) {
-            addChunkTicker(new ChunkPos(blockpos));
-            scheduleTick(blockpos, wrapper.getBlockState(blockpos).getBlock(), 0);
-        }
     }
   
     @Override
@@ -119,10 +116,18 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
         runBlockEvents();
 
         // Handling random ticks
-        for(var blockpos : wrapper) {
+        var randomTickSpeed = this.level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
+        if(randomTickSpeed > 0) {
+            for(var region : ContraptionHelper.getRegions(wrapper)) {
+                for(int i = 0; i < randomTickSpeed; i++) {
+                    // Updating the randValue normally done on the getBlockRandomPos method
+                    randValue = randValue * 3 + 1013904223;
+                    var blockpos = region.getRandomBlockPos(randValue);
             var state = wrapper.getBlockState(blockpos);
             if (state.isRandomlyTicking()) {
                 state.randomTick(this, blockpos, this.random);
+                    }
+                }
             }
         }
 
@@ -243,36 +248,6 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
             addChunkTicker(new ChunkPos(blockpos));
 
         return true;
-        // var oldState = getBlockState(blockpos);
-        // var block = state.getBlock();
-        
-        // if(oldState.hasBlockEntity()) {
-        //     if(!level.isClientSide())
-        //         oldState.onRemove(this, blockpos, oldState, false);
-        //     if(!oldState.is(block) || !state.hasBlockEntity()) 
-        //         removeBlockEntity(blockpos);
-        // }
-
-        // BlockEntity tile = null;
-        // if(state.hasBlockEntity()) {
-        //     if(block instanceof EntityBlock entityBlock)
-        //         tile = entityBlock.newBlockEntity(blockpos, state);
-
-        //     if(tile != null) {
-        //         tile.setLevel(this);
-        //         tile.clearRemoved();
-        //     }
-        // }
-
-        // wrapper.contraption().setBlock(blockpos, state, tile);
-        // blockEntityChanged(blockpos);
-        // markAndNotifyBlock(blockpos, null, oldState, state, p_46607_, p_46608_);
-        // onBlockUpdate.accept(wrapper, blockpos);
-
-        // if(!state.isAir())
-        //     addChunkTicker(new ChunkPos(blockpos));
-
-        // return true;
     }
 
     @Override

@@ -118,13 +118,13 @@ public class ContraptionWrapper implements BlockAndTintGetter, Iterable<BlockPos
     }
     
     /**
-     * Gets the region at the given position in the contraption (in 8x8x8 blocks)
+     * Gets the region at the given position in the contraption (in 16x16x16 blocks)
      * @param position the position to get the region at
      * @return the region at the given position
      */
     @Nonnull
     public Region getRegion(@Nonnull BlockPos position) {
-        return new Region(this, position.getX()/8, position.getY()/8, position.getZ()/8);
+        return new Region(this, position.getX()/Region.size, position.getY()/Region.size, position.getZ()/Region.size);
     }
 
     @Override

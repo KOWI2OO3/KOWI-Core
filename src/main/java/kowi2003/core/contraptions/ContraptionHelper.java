@@ -1,5 +1,6 @@
 package kowi2003.core.contraptions;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.function.Predicate;
@@ -90,6 +91,24 @@ public class ContraptionHelper {
     }
 
     /**
+     * Gets the min and max block positions of the contraption
+     * @param contraption the contraption to get the block positions from
+     * @return a pair of the min and max block positions
+     */
+    public static Pair<BlockPos, BlockPos> getMinMaxBlockPos(@Nonnull Contraption contraption) {
+        if(contraption.blocks.size() == 0) return new Pair<>(new BlockPos(0, 0, 0), new BlockPos(0, 0, 0));
+        
+        var min = new BlockPos(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        var max = new BlockPos(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
+        for (var position : contraption) {
+            min = new BlockPos(Math.min(min.getX(), position.getX()), Math.min(min.getY(), position.getY()), Math.min(min.getZ(), position.getZ()));
+            max = new BlockPos(Math.max(max.getX(), position.getX()), Math.max(max.getY(), position.getY()), Math.max(max.getZ(), position.getZ()));
+        }
+
+        return new Pair<>(min, max);
+    }
+
+    /**
      * Clips the contraption with the given position and direction
      * @param wrapper the contraption wrapper to clip
      * @param position the position to clip from (in world space)
@@ -153,6 +172,26 @@ public class ContraptionHelper {
         end = new Vec3(transposedEnd.x, transposedEnd.y, transposedEnd.z);
         
         return new Pair<>(start, end);
+    }
+
+    /**
+     * Gets all regions of the contraption
+     * @param wrapper the contraption wrapper to get the regions from
+     * @return an array of regions
+     */
+    public static Region[] getRegions(ContraptionWrapper wrapper) {
+        var minMax = getMinMaxBlockPos(wrapper.contraption());
+        var min = minMax.getA();
+        var max = minMax.getB();
+        var regions = new ArrayList<Region>();
+        for(int x = min.getX(); x <= max.getX(); x += Region.size) {
+            for(int y = min.getY(); y <= max.getY(); y += Region.size) {
+                for(int z = min.getZ(); z <= max.getZ(); z += Region.size) {
+                    regions.add(new Region(wrapper, x/Region.size, y/Region.size, z/Region.size));
+                }
+            }
+        }
+        return regions.toArray(Region[]::new);
     }
 
 }

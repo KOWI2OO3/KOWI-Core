@@ -1,16 +1,19 @@
 package kowi2003.core.contraptions;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public record Region(ContraptionWrapper wrapper, int x, int y, int z) {
     
+    public static final int size = 16; 
+
     /**
      * Gets the bounding box of the region
      * @return the bounding box
      */
     public AABB boundingBox() {
-        return new AABB(x * 8 , y * 8, z * 8, x * 8 + 7, y * 8 + 7, z * 8 + 7);
+        return new AABB(x * size , y * size, z * size, x * size + size-1, y * size + size-1, z * size + size-1);
     }
 
     /**
@@ -25,4 +28,22 @@ public record Region(ContraptionWrapper wrapper, int x, int y, int z) {
         return boundingBox().clip(clipPoints.getA(), clipPoints.getB()).isPresent();
     }
 
+    /**
+     * Gets a random block position within the region
+     * @return the random block position
+     */
+    public BlockPos getRandomBlockPos(int randValue) {
+        var min = getMinBlockPos();
+        var sizeBits = 15;
+        int i = randValue >> 2;
+        return new BlockPos(min.getX() + (i & sizeBits), min.getY() + (i >> 16 & sizeBits), min.getZ() + (i >> 8 & sizeBits));
+    }
+
+    public BlockPos getMinBlockPos() {
+        return new BlockPos(x * size, y * size, z * size);
+    }
+
+    public BlockPos getMaxBlockPos() {
+        return new BlockPos(x * size + size - 1, y * size + size - 1, z * size + size - 1);
+    }
 }
