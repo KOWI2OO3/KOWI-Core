@@ -97,6 +97,8 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
     private final ObjectLinkedOpenHashSet<BlockEventData> blockEvents = new ObjectLinkedOpenHashSet<>();
     private final List<BlockEventData> blockEventsToReschedule = new ArrayList<>(64);
 
+    private final Map<BlockPos, BlockEntityTickerWrapper<?>> blockEntityTickers = new HashMap<>();
+
     private int randValue = RandomSource.create().nextInt();
 
     public VirtualSeverLevel(ContraptionWrapper wrapper, ServerLevel level, Consumer<ContraptionWrapper> onUpdate, BiConsumer<ContraptionWrapper, BlockPos> onBlockUpdate) {
@@ -108,6 +110,8 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
         this.level = level;
         this.onUpdate = onUpdate == null ? w -> {} : onUpdate;
         this.onBlockUpdate = onBlockUpdate == null ? (w, p) -> onUpdate.accept(wrapper) : onBlockUpdate;
+
+        updateData(wrapper, level);
     }
   
     @Override
@@ -155,7 +159,11 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
     @Override
     protected void tickBlockEntities() {
-        // TODO: tick contraption block entities
+        for (var entry : blockEntityTickers.entrySet()) {
+            var ticker = entry.getValue();
+            if(ticker != null)
+                ticker.tick(this, entry.getKey());
+        }
     }
 
     @Override public void tickChunk(@Nonnull LevelChunk chunk, int p_8716_) {}
@@ -205,8 +213,13 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
             this.level = serverLevel;
         this.wrapper = wrapper;
 
-        for (var blockpos : wrapper)
+        for (var blockpos : wrapper) {
             addChunkTicker(new ChunkPos(blockpos));
+
+            var tile = wrapper.getBlockEntity(blockpos);
+            if(tile != null)
+                updateBlockEntityTicker(tile);
+        }
     }
 
     @Override public ServerChunkCache getChunkSource() { return level == null ? STATIC_LEVEL.getChunkSource() : level.getChunkSource(); }
@@ -246,16 +259,27 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
         // Setting block entity
         if(state.hasBlockEntity() && block instanceof EntityBlock entityBlock) {
-            if(this.getBlockEntity(blockpos) != null)
-                removeBlockEntity(blockpos);
+            var existing = this.getBlockEntity(blockpos);
             var blockentity = entityBlock.newBlockEntity(blockpos, state);
+
             if(blockentity != null) {
+                if(existing != null) {
+                    if(blockentity.getType() == existing.getType())
+                        blockentity.load(existing.serializeNBT());
+
+                    removeBlockEntity(blockpos);
+                }
+
+                // Actually setting blockentity in world
                 this.setBlockEntity(blockentity);
                 
+                updateBlockEntityTicker(blockentity);
                 // Register Game event listeners
                 
-            }
-            //TODO: add block entity ticker
+                blockentity.onLoad();
+
+            }else if(existing != null)
+                removeBlockEntity(blockpos);
         }
 
         this.markAndNotifyBlock(blockpos, null, old, state, p_46607_, p_46608_);
@@ -281,6 +305,16 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
         tile.setLevel(this);
         onBlockUpdate.accept(wrapper, blockpos);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends BlockEntity> void updateBlockEntityTicker(T tile) {
+        var state = tile.getBlockState();
+        var ticker = state.getTicker(this, (BlockEntityType<T>)tile.getType());
+        if(ticker != null) 
+            blockEntityTickers.put(tile.getBlockPos(), new BlockEntityTickerWrapper<T>(tile.getClass(), ticker));
+        else 
+            blockEntityTickers.remove(tile.getBlockPos());
     }
 
     @Override
