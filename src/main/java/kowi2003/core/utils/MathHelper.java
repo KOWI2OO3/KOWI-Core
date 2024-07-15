@@ -44,7 +44,7 @@ public final class MathHelper {
 	 * @return the rotated vector
 	 */
 	public static Vector3d rotateVector(Vector3dc vector, Quaterniondc rotation) {
-		var vec4 = rotation.transform(new Vector4d(vector.x(), vector.y(), vector.z(), 1.0f));
+		var vec4 = rotation.transform(new Vector4d(vector.x(), vector.y(), vector.z(), 1.0));
 		return new Vector3d(vec4.x(), vec4.y(), vec4.z()); 
 	}
 	
@@ -77,7 +77,7 @@ public final class MathHelper {
 	 * @return the rotated vector
 	 */
 	public static Vec3 rotateVector(Vec3 vector, Quaterniondc rotation) {
-		var result = rotateVector(new Vector3d((float)vector.x, (float)vector.y, (float)vector.z), rotation);
+		var result = rotateVector(new Vector3d(vector.x, vector.y, vector.z), rotation);
         return new Vec3(result.x, result.y, result.z);
 	}
     

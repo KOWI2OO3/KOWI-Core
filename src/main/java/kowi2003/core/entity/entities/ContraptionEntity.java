@@ -244,6 +244,9 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
   public void setContraption(Contraption contraption) {
     var hasChanged = this.contraption != contraption;
     
+    if(contraptionLevel() instanceof IVirtualLevel virtualLevel)
+      virtualLevel.updateData(contraptionWrapper(), level());
+    
     for (var tile : new ContraptionWrapper(contraption, level()).getBlockEntities())
       tile.setLevel(contraptionLevel());
 

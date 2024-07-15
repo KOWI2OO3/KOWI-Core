@@ -8,11 +8,13 @@ import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.joml.Quaterniond;
 import org.joml.Quaternionf;
 import org.joml.Vector4d;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
+import kowi2003.core.utils.MathHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -192,6 +194,17 @@ public class ContraptionHelper {
             }
         }
         return regions.toArray(Region[]::new);
+    }
+
+    /**
+     * Transposes the given position from the contraption space to world space
+     * @param position the position to transpose in contraption space
+     * @param wrapper the contraption wrapper to transpose to
+     * @return the transposed position into world space
+     */
+    public static Vec3 transposePoint(Vec3 position, ContraptionWrapper wrapper) {
+        var rotation = new Quaterniond(wrapper.rotation());
+        return MathHelper.rotateVector(position, rotation).add(wrapper.position());
     }
 
 }

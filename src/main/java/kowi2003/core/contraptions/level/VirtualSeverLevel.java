@@ -230,9 +230,7 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
     @Override
     public void levelEvent(@Nullable Player player, int p_8685_, @Nonnull BlockPos blockpos, int p_8687_) {
-        var position = new Vec3(blockpos.getX(), blockpos.getY(), blockpos.getZ());
-        var rotation = new Quaterniond(wrapper.rotation()).conjugate();
-        position = MathHelper.rotateVector(position, rotation).add(wrapper.position());
+        var position = transposePoint(blockpos.getX(), blockpos.getY(), blockpos.getZ());
         blockpos = new BlockPos((int)position.x(), (int)position.y(), (int)position.z());
         level.levelEvent(player, p_8685_, blockpos, p_8687_);
     }
@@ -349,9 +347,7 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
 
     @Override
     public boolean addFreshEntity(@Nonnull Entity entity) {
-        var position = entity.position();
-        var rotation = new Quaterniond(wrapper.rotation()).conjugate();
-        position = MathHelper.rotateVector(position, rotation).add(wrapper.position());
+        var position = transposePoint(entity.position());
         entity.moveTo(position.x(), position.y(), position.z());
         return level.addFreshEntity(entity);
     }
@@ -441,10 +437,7 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
     @Override
     public void playSound(@Nullable Player player, double x, double y, double z,
             @Nonnull SoundEvent sound, @Nonnull SoundSource source, float volume, float pitch) {
-        var position = new Vec3(x, y, z);
-        var rotation = new Quaterniond(wrapper.rotation()).conjugate();
-        position = MathHelper.rotateVector(position, rotation).add(wrapper.position());
-
+        var position = transposePoint(x, y, z);
         level.playSound(player, position.x, position.y, position.z, sound, source, volume, pitch);
     }
 
@@ -543,6 +536,14 @@ public class VirtualSeverLevel extends ServerLevel implements IVirtualLevel {
             chunkTickers.put(chunkPos, ticker);
             blockTicks.addContainer(chunkPos, ticker);
         }
+    }
+
+    private Vec3 transposePoint(double x, double y, double z) {
+        return transposePoint(new Vec3(x, y, z));
+    }
+
+    private Vec3 transposePoint(Vec3 position) {
+        return ContraptionHelper.transposePoint(position, wrapper);
     }
 
     private static final ChunkProgressListener constructDummyProgressListener() {

@@ -9,10 +9,8 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.joml.Quaterniond;
-
+import kowi2003.core.contraptions.ContraptionHelper;
 import kowi2003.core.contraptions.ContraptionWrapper;
-import kowi2003.core.utils.MathHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -103,10 +101,7 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
 
     @Override
     public void levelEvent(@Nullable Player player, int p_104655_, @Nonnull BlockPos blockpos, int p_104657_) {
-		var position = new Vec3(blockpos.getX(), blockpos.getY(), blockpos.getZ());
-        var rotation = new Quaterniond(wrapper.rotation()).conjugate();
-
-        position = MathHelper.rotateVector(position, rotation).add(wrapper.position());
+		var position = transposePoint(blockpos.getX(), blockpos.getY(), blockpos.getZ());
         blockpos = new BlockPos((int)position.x(), (int)position.y(), (int)position.z());
         level.levelEvent(player, p_104655_, blockpos, p_104657_);
     }
@@ -229,9 +224,7 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
     @Override
     public void playSound(@Nullable Player player, double x, double y, double z,
             @Nonnull SoundEvent sound, @Nonnull SoundSource source, float volume, float pitch) {
-        var position = new Vec3(x, y, z);
-        var rotation = new Quaterniond(wrapper.rotation()).conjugate();
-        position = MathHelper.rotateVector(position, rotation).add(wrapper.position());
+        var position = transposePoint(x, y, z);
 
         level.playSound(player, position.x, position.y, position.z, sound, source, volume, pitch);
     }
@@ -305,18 +298,14 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
     @Override
     public void addParticle(@Nonnull ParticleOptions particle, double x, double y, double z,
             double p_104710_, double p_104711_, double p_104712_) {
-        var position = new Vec3(x, y, z);
-        var rotation = new Quaterniond(wrapper.rotation()).conjugate();
-        position = MathHelper.rotateVector(position, rotation).add(wrapper.position());
+        var position = transposePoint(x, y, z);
         level.addParticle(particle, position.x, position.y, position.z, p_104710_, p_104711_, p_104712_);
     }
 
     @Override
     public void addParticle(@Nonnull ParticleOptions particle, boolean p_104715_, double x, double y,
             double z, double p_104719_, double p_104720_, double p_104721_) {
-        var position = new Vec3(x, y, z);
-        var rotation = new Quaterniond(wrapper.rotation()).conjugate();
-        position = MathHelper.rotateVector(position, rotation).add(wrapper.position());
+        var position = transposePoint(x, y, z);
         level.addParticle(particle, p_104715_, position.x, position.y, position.z, p_104719_, p_104720_, p_104721_);
     }
 
@@ -328,10 +317,16 @@ public class VirtualClientLevel extends ClientLevel implements IVirtualLevel {
 
     @Override
     public Holder<Biome> getBiome(@Nonnull BlockPos blockpos) {
-        var position = new Vec3(blockpos.getX(), blockpos.getY(), blockpos.getZ());
-        var rotation = new Quaterniond(wrapper.rotation()).conjugate();
-        position = MathHelper.rotateVector(position, rotation).add(wrapper.position());
+        var position = transposePoint(blockpos.getX(), blockpos.getY(), blockpos.getZ());
         return level.getBiome(new BlockPos((int)position.x, (int)position.y, (int)position.z));
+    }
+
+    private Vec3 transposePoint(double x, double y, double z) {
+        return transposePoint(new Vec3(x, y, z));
+    }
+
+    private Vec3 transposePoint(Vec3 position) {
+        return ContraptionHelper.transposePoint(position, wrapper);
     }
 
 }

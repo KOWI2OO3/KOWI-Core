@@ -73,6 +73,7 @@ public class RenderHelper {
      * @param blocks the blocks to render
      * @param position the position to render the blocks at
      */
+    @SuppressWarnings("null")
     public static void renderBlocks(@Nonnull RenderContext context, BlockData[] blocks, Vector3f position) {
         Minecraft mc = Minecraft.getInstance();
         if(mc.level == null) return;
@@ -88,6 +89,7 @@ public class RenderHelper {
      * @param buffersrc the buffer source to render with
      * @param contraption the contraption to render
      */
+    @SuppressWarnings("null")
     public static void renderContraption(@Nonnull RenderContext context, @Nonnull ContraptionWrapper wrapper) {
         var mc = Minecraft.getInstance();
         var position = wrapper.position();
@@ -142,6 +144,7 @@ public class RenderHelper {
      * @param contraption the contraption to render
      * @param blockTransform the block transform to apply to the blocks before rendering (applied to each block individually)
      */
+    @SuppressWarnings("null")
     public static void renderContraption(@Nonnull RenderContext context, @Nonnull ContraptionWrapper wrapper, @Nullable Consumer<PoseStack> blockTransform) {
         if(blockTransform == null) blockTransform = (pose) -> {};
         var mc = Minecraft.getInstance();
@@ -219,6 +222,7 @@ public class RenderHelper {
      * @param renderType the render type to render the blocks with (e.g. solid, cutout, cutout_mipped, translucent, or a custom render type)
      * @param blockTransform the block transform to apply to the blocks before rendering (applied to each block individually)
      */
+    @SuppressWarnings("null")
     public static void renderContraption(@Nonnull RenderContext context, @Nonnull RenderType renderType, @Nonnull ContraptionWrapper wrapper, @Nullable Consumer<PoseStack> blockTransform) {
         if(blockTransform == null) blockTransform = (pose) -> {};
 
