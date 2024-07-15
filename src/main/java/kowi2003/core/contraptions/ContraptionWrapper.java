@@ -112,8 +112,9 @@ public class ContraptionWrapper implements BlockAndTintGetter, Iterable<BlockPos
     }
 
     @Override
-    public int getBlockTint(@Nonnull BlockPos position, @Nonnull ColorResolver resolver) {
-        var levelPosition = new BlockPos((int)this.position.x() + position.getX(), (int)this.position.y() + position.getY(), (int)this.position.z() + position.getZ());
+    public int getBlockTint(@Nonnull BlockPos blockpos, @Nonnull ColorResolver resolver) {
+        var position = ContraptionHelper.transposePoint(new Vec3(blockpos.getX(),blockpos.getY(),blockpos.getZ()), this);
+        var levelPosition = new BlockPos((int)position.x(), (int)position.y(), (int)position.z());
         return level.getBlockTint(levelPosition, resolver);
     }
     
