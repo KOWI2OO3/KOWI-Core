@@ -2,12 +2,24 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "prepareRunClientCompile",
+      "label": "prepareRunClientCompile [Core]",
       "type": "shell",
       "command": "./gradlew prepareRunClientCompile",
       "options": {
         "cwd": "${workspaceFolder}"
       }
+    },
+    {
+      "label": "prepareRunClientCompile [Testing Core]",
+      "type": "shell",
+      "command": "./gradlew TestingCore:prepareRunClientCompile",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "prepareRunClientCompile",
+      "dependsOn": ["prepareRunClientCompile [Core]", "prepareRunClientCompile [Testing Core]"]
     },
     {
       "label": "prepareRunDataCompile",
