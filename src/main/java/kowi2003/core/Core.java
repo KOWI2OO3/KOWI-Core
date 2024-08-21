@@ -49,7 +49,7 @@ public class Core
     
     private void onClientSetup(final FMLClientSetupEvent event)
     {
-    	ClientSetup.onSetupClient();
+    	ClientSetup.onClientSetup();
     }
 
 }
