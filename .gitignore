@@ -13,6 +13,9 @@ out
 *.iml
 .idea
 
+#vscode
+.vscode/settings.json
+
 # gradle
 build
 .gradle
@@ -23,5 +26,3 @@ run
 
 # Files from Forge MDK
 forge*changelog.txt
-
-.vscode/settings.json
