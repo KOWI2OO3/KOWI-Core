@@ -11,26 +11,33 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-
-// The value here should match an entry in the META-INF/mods.toml file
+/**
+ * The main class for the mod, where everything is initialized
+ * The testing core mod is meant as an example of how to use the KOWI Core mod 
+ * and its used for me to test the core mod with
+ * 
+ * @author KOWI2003
+ */
 @Mod(TestingCore.MODID)
 public class TestingCore
 {
-    // Define mod id in a common place for everything to reference
+    // The modid definition of the mod used as a reference
     public static final String MODID = "testing_core";
     
     public TestingCore()
     {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
 
+        // Registering blocks and items for the mod just like you would do normally
         ModBlocks.register(modEventBus);
-        ModItems.ITEMS.register(modEventBus);
+        ModItems.register(modEventBus);
 
         MinecraftForge.EVENT_BUS.register(this);
     }
+
+// More random forge stuff setup to be used in the future if needed
 
     private void commonSetup(final FMLCommonSetupEvent event)
     {
