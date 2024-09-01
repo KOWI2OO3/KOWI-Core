@@ -1,6 +1,7 @@
 package io.kowi2003.testing_core;
 
 import io.kowi2003.testing_core.init.ModBlocks;
+import io.kowi2003.testing_core.init.ModCreativeTabs;
 import io.kowi2003.testing_core.init.ModItems;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -33,6 +34,7 @@ public class TestingCore
         // Registering blocks and items for the mod just like you would do normally
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
+        ModCreativeTabs.register(modEventBus);
 
         MinecraftForge.EVENT_BUS.register(this);
     }
