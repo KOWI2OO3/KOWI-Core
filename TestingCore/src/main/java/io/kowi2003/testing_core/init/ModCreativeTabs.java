@@ -21,7 +21,10 @@ public class ModCreativeTabs {
         .title(Component.translatable("creative_tab." + TestingCore.MODID + ".base"))       // Defining the name
         .displayItems((ItemDisplayParameters, output) -> {
                 output.accept(new ItemStack(ModBlocks.EXAMPLE_BLOCK.get()));
+                output.accept(new ItemStack(ModBlocks.EXAMPLE_HORIZONTAL_BLOCK.get()));
+                output.accept(new ItemStack(ModBlocks.EXAMPLE_VERTICAL_BLOCK.get()));
                 output.accept(new ItemStack(ModBlocks.EXAMPLE_ROTATABLE_BLOCK.get()));
+                output.accept(new ItemStack(ModBlocks.EXAMPLE_ORIENTABLE_BLOCK.get()));
                 output.accept(new ItemStack(ModItems.EXAMPLE_ITEM.get()));
             })
         .build());

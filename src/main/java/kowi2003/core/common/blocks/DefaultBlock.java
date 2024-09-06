@@ -30,30 +30,61 @@ public class DefaultBlock extends Block {
     SoundType sound;
 	VoxelShape shape;
 
+	/**
+     * Creates a new horizontal block
+     * @param properties the properties of the block
+     * @param sound the sound type the block should make
+     * @param shape the shape used for collision and clipping
+     */
     public DefaultBlock(Properties properties, SoundType sound, VoxelShape shape) {
         this(properties);
         this.sound = sound;
 		this.shape = shape;
     }
 
+	/**
+     * Creates a new horizontal block
+     * @param properties the properties of the block
+     * @param sound the sound type the block should make
+     * @param shape the shape used for collision and clipping
+     */
     public DefaultBlock(Properties properties, SoundType sound, Supplier<VoxelShape> shape) {
         this(properties, sound, shape.get());
     }
 
+	/**
+     * Creates a new horizontal block
+     * @param properties the properties of the block
+     * @param shape the shape used for collision and clipping
+     */
 	public DefaultBlock(Properties properties, VoxelShape shape) {
         this(properties);
 		this.shape = shape;
     }
 
+	/**
+     * Creates a new horizontal block
+     * @param properties the properties of the block
+     * @param shape the shape used for collision and clipping
+     */
     public DefaultBlock(Properties properties, Supplier<VoxelShape> shape) {
         this(properties, shape.get());
     }
 
+    /**
+     * Creates a new block with blockentity
+     * @param properties the properties of the block
+     * @param sound the sound type the block should make
+     */
 	public DefaultBlock(Properties properties, SoundType sound) {
         this(properties);
         this.sound = sound;
     }
 
+	/**
+     * Creates a new horizontal block
+     * @param properties the properties of the block
+     */
     public DefaultBlock(Properties properties) {
         super(properties);
     }

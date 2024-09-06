@@ -13,65 +13,61 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * A rotatable block with a block entity, which can be rotated around the y-axis.
+ * A rotatable block, which can be rotated around in any direction. while housing a block entity.
  * 
  * @author KOWI2003
  */
-public class HorizontalContainerBlock extends ContainerBlock {
-    
-    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+public class RotatableContainerBlock extends ContainerBlock {
 
-	protected Map<Direction, VoxelShape> shapes;
+    public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
-    /**
-     * Creates a new horizontal block with blockentity
+	private Map<Direction, VoxelShape> shapes;
+
+	/**
+     * Creates a new horizontal block
      * @param properties the properties of the block
-     * @param provider the provider of the blockentity
      * @param sound the sound type the block should make
      * @param shape the shape used for collision and clipping
      */
-    public HorizontalContainerBlock(Properties properties, IBlockEntityProvider<?> provider, SoundType sound, VoxelShape shape) {
+    public RotatableContainerBlock(Properties properties, IBlockEntityProvider<?> provider, SoundType sound, VoxelShape shape) {
         super(properties, provider, sound);
-        shapes = ShapeHelper.createHorizontalShapes(shape);
+		this.shapes = ShapeHelper.createRotatedShapes(shape);
     }
 
     /**
      * Creates a new block with blockentity
      * @param properties the properties of the block
-     * @param provider the provider of the blockentity
-     * @param shape the shape used for collision and clipping
-     */
-	public HorizontalContainerBlock(Properties properties, IBlockEntityProvider<?> provider, VoxelShape shape) {
-        super(properties, provider);
-        shapes = ShapeHelper.createHorizontalShapes(shape);
-    }
-
-    /**
-     * Creates a new block with blockentity
-     * @param properties the properties of the block
-     * @param provider the provider of the blockentity
      * @param sound the sound type the block should make
      */
-	public HorizontalContainerBlock(Properties properties, IBlockEntityProvider<?> provider, SoundType sound) {
-        super(properties, provider);
+	public RotatableContainerBlock(Properties properties, IBlockEntityProvider<?> provider, SoundType sound) {
+        super(properties, provider, sound);
     }
 
     /**
-     * Creates a new horizontal block with blockentity
+     * Creates a new block with blockentity
      * @param properties the properties of the block
-     * @param provider the provider of the blockentity
+     * @param shape the shape used for collision and clipping
      */
-	public HorizontalContainerBlock(Properties builder, IBlockEntityProvider<?> provider) {
+	public RotatableContainerBlock(Properties properties, IBlockEntityProvider<?> provider, VoxelShape shape) {
+        super(properties, provider);
+		this.shapes = ShapeHelper.createRotatedShapes(shape);
+    }
+
+	/**
+     * Creates a new horizontal block
+     * @param properties the properties of the block
+     */
+	public RotatableContainerBlock(Properties builder, IBlockEntityProvider<?> provider) {
 		super(builder, provider);
 	}
 
@@ -81,8 +77,9 @@ public class HorizontalContainerBlock extends ContainerBlock {
 	}
 	
 	@Override
+	@SuppressWarnings("null")
 	public BlockState getStateForPlacement(@Nonnull BlockPlaceContext context) {
-		return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+		return super.getStateForPlacement(context).setValue(FACING, context.getClickedFace());
 	}
 	
 	@Override
