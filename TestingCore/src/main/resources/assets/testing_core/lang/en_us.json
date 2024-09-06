@@ -1,0 +1,10 @@
+{
+	"item.testing_core.example_item": "Example Item",
+
+	"block.testing_core.example_block_horizontal": "Example Block (§3Horizontal§r)",
+	"block.testing_core.example_block_vertical": "Example Block (§3Vertical§r)",
+	"block.testing_core.example_block_rotatable": "Example Block (§3Rotatable§r)",
+	"block.testing_core.example_block_orientable": "Example Block (§3Orientable§r)",
+
+	"creative_tab.testing_core.base": "Testing Core"
+}

@@ -1,0 +1,8 @@
+{
+    "variants": {
+        "facing=south": { "model": "testing_core:block/example_block_horizontal", "y": 180 },
+        "facing=west": { "model": "testing_core:block/example_block_horizontal", "y": 270 },
+        "facing=north": { "model": "testing_core:block/example_block_horizontal" },
+        "facing=east": { "model": "testing_core:block/example_block_horizontal", "y": 90 }
+    }
+}
