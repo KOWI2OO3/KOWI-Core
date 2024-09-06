@@ -101,8 +101,8 @@ public class ContainerBlock extends BaseEntityBlock {
 	@SuppressWarnings("deprecation")
 	public InteractionResult use(@Nonnull BlockState state, @Nonnull Level world, @Nonnull BlockPos pos, @Nonnull Player player,
 			@Nonnull InteractionHand hand, @Nonnull BlockHitResult raytraceResult) {
+		var tile = world.getBlockEntity(pos);
 		if(!world.isClientSide) {
-			var tile = world.getBlockEntity(pos);
 			if(tile instanceof IInteractable interactable)
 				return interactable.use(state, world, pos, player, hand, raytraceResult);
 			
@@ -111,7 +111,6 @@ public class ContainerBlock extends BaseEntityBlock {
                 return InteractionResult.SUCCESS;
             }
 		}
-		var tile = world.getBlockEntity(pos);
 		return tile instanceof MenuProvider ? InteractionResult.SUCCESS : super.use(state, world, pos, player, hand, raytraceResult);
 	}
 	
