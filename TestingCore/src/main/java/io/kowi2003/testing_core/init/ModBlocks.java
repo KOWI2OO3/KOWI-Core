@@ -8,6 +8,7 @@ import kowi2003.core.common.blocks.RotatableBlock;
 import kowi2003.core.common.blocks.VerticalBlock;
 import kowi2003.core.common.registries.BlockRegister;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.RegistryObject;
@@ -23,7 +24,8 @@ public class ModBlocks {
     // Register blocks here 
 
     // Example of using the default block to easily add a simple block without the hassle of creating a new class
-    public static final RegistryObject<Block> EXAMPLE_BLOCK = BLOCKS.register("example_block", () -> new DefaultBlock(Block.Properties.of().strength(3.0F, 3.0F)));
+    public static final RegistryObject<Block> EXAMPLE_BLOCK = BLOCKS.register("example_block", () -> new DefaultBlock(Block.Properties.of().strength(3.0F, 3.0F),
+        SoundType.AMETHYST));
 
     // Example of using the horizontal block to easily add a block that can be rotated horizontally
     public static final RegistryObject<Block> EXAMPLE_HORIZONTAL_BLOCK = BLOCKS.register("example_block_horizontal", () -> new HorizontalBlock(
