@@ -25,8 +25,8 @@ public record JsonModel(BakedModel model) implements IModel {
 
         for(var renderPass : model.getRenderPasses(ItemStack.EMPTY, fabulous)) 
         {
-            var renderType = renderPass.getRenderTypes(ItemStack.EMPTY, fabulous);
-            var rendertype = !hasRenderType ? renderType.get(0) : rendertypeLookup.get(new ResourceLocation(""));
+            var rendertypes = renderPass.getRenderTypes(ItemStack.EMPTY, fabulous);
+            var rendertype = !hasRenderType ? rendertypes.get(0) : rendertypeLookup.get(new ResourceLocation(""));
             var consumer = ItemRenderer.getFoilBufferDirect(buffersrc, rendertype, false, false);
 
             renderer.renderQuadList(pose, consumer, renderPass.getQuads(null, null, random, null, rendertype), ItemStack.EMPTY, combinedLightIn, combinedOverlayIn);
