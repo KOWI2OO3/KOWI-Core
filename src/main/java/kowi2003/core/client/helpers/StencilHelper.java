@@ -7,7 +7,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.Minecraft;
 
-public class StencilHelper {
+public final class StencilHelper {
     
     /**
      * Sets up the stencil buffer for the next rendering pass.
@@ -19,7 +19,10 @@ public class StencilHelper {
 
     public static void finishStencil()
     {
-        StencilHelper.setupRenderOutside();
+        // StencilHelper.clearStencilBuffer();
+        setStencilFunc(GL11.GL_ALWAYS, 1, 0xFF);
+		setStencilMask(0x00); // disable writing to the stencil buffer (because we only want to read the stencil buffer from this point, not write to it anymore)
+
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
         GL11.glEnable(GL11.GL_DEPTH_TEST);
