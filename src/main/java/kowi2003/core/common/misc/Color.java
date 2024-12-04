@@ -138,6 +138,4 @@ public record Color(float red, float green, float blue, float alpha) {
 		String alphaHex = Integer.toHexString(Math.round(alpha() * 255) & 0xff);
         return alphaHex + hex;
     }
-
-
 }
