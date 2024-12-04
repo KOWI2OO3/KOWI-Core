@@ -13,10 +13,6 @@ out
 *.iml
 .idea
 
-#vscode
-/.vscode
-.vscode/settings.json
-
 # gradle
 build
 .gradle
@@ -28,3 +24,9 @@ run
 # Files from Forge MDK
 forge*changelog.txt
 /wiki
+
+# Discard vscode workspace
+Core.code-workspace
+/.vscode
+.vscode/settings.json
+/.vscode/settings.json
