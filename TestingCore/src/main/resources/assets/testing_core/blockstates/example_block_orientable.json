@@ -1,0 +1,14 @@
+{
+	"variants": 
+	{
+        "facing=south,up=false": { "model": "testing_core:block/example_block_orientable", "y": 180 },
+        "facing=west,up=false": { "model": "testing_core:block/example_block_orientable", "y": 270 },
+        "facing=north,up=false": { "model": "testing_core:block/example_block_orientable" },
+        "facing=east,up=false": { "model": "testing_core:block/example_block_orientable", "y": 90 },
+
+        "facing=south,up=true": { "model": "testing_core:block/example_block_orientable", "x": 180 },
+        "facing=west,up=true": { "model": "testing_core:block/example_block_orientable", "x": 180, "y": 90 },
+        "facing=north,up=true": { "model": "testing_core:block/example_block_orientable", "x": 180, "y": 180 },
+        "facing=east,up=true": { "model": "testing_core:block/example_block_orientable", "x": 180, "y": 270 }
+	}
+}

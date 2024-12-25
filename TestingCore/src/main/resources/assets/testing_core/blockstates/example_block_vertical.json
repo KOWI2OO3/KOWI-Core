@@ -1,0 +1,6 @@
+{
+    "variants": {
+        "up=false": { "model": "testing_core:block/example_block_vertical"},
+        "up=true": { "model": "testing_core:block/example_block_vertical", "x": 180 }
+    }
+}

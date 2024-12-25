@@ -5,7 +5,8 @@ import java.util.function.Supplier;
 
 import kowi2003.core.common.contraptions.Contraption;
 import kowi2003.core.common.entities.entity.ContraptionEntity;
-import kowi2003.core.common.network.PacketHandler;
+import kowi2003.core.common.init.CoreNetworkChannel;
+import kowi2003.core.common.network.packets.IHandledPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
@@ -14,7 +15,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
-public class PacketSyncContraption {
+public class PacketSyncContraption implements IHandledPacket {
     
     int id;
     UUID entityId;
@@ -54,7 +55,7 @@ public class PacketSyncContraption {
 
                 for(var localPlayer : level.getServer().getPlayerList().getPlayers()) {
                     if(localPlayer != player)
-                        PacketHandler.sendToClient(new PacketSyncContraption(id, entityId, contraption), localPlayer);
+                        CoreNetworkChannel.CoreChannel.sendToClient(new PacketSyncContraption(id, entityId, contraption), localPlayer);
                 }
             }
         });

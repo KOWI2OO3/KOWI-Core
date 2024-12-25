@@ -4,15 +4,11 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
-import kowi2003.core.client.init.ClientSetup;
-import kowi2003.core.common.entities.CoreEntitySerializers;
-import kowi2003.core.common.network.PacketHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
@@ -32,27 +28,20 @@ public class Core
 
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
-        modEventBus.addListener(this::onClientSetup);
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
     }
-    
+
     private void commonSetup(final FMLCommonSetupEvent event)
     {
-        CoreEntitySerializers.register();
-        PacketHandler.registerMessages(Core.MODID);
+
     }
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event)
     {
         
-    }
-    
-    private void onClientSetup(final FMLClientSetupEvent event)
-    {
-    	ClientSetup.onSetupClient();
     }
 
 }

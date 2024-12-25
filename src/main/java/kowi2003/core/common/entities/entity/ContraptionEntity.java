@@ -17,7 +17,7 @@ import kowi2003.core.common.contraptions.ContraptionWrapper;
 import kowi2003.core.common.contraptions.level.IVirtualLevel;
 import kowi2003.core.common.data.IRotatable;
 import kowi2003.core.common.entities.CoreEntitySerializers;
-import kowi2003.core.common.network.PacketHandler;
+import kowi2003.core.common.init.CoreNetworkChannel;
 import kowi2003.core.common.network.packets.entity.PacketSyncBlocks;
 import kowi2003.core.common.network.packets.entity.PacketSyncContraption;
 import net.minecraft.client.Minecraft;
@@ -299,7 +299,6 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
    * Gets the rotation of the contraption
    * @return the rotation
    */
-  @SuppressWarnings("resource")
   public Quaternionf getRotation() {
 		var rotation = level().isClientSide && isControlledByLocalInstance() ? this.rotation : entityData.get(DATA_ROTATION);
     if(rotation.w == 0)
@@ -321,9 +320,9 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
   public void syncContraption() {
     var level = level();
     if(level.isClientSide)
-      PacketHandler.sendToServer(new PacketSyncContraption(getId(), getUUID(), contraption()));
+      CoreNetworkChannel.CoreChannel.sendToServer(new PacketSyncContraption(getId(), getUUID(), contraption()));
     else
-      PacketHandler.sendToAllClients(new PacketSyncContraption(getId(), getUUID(), contraption()), level);
+      CoreNetworkChannel.CoreChannel.sendToAllClients(new PacketSyncContraption(getId(), getUUID(), contraption()), level);
   }
   
   public void syncBlock(BlockPos position) { syncBlocks(Set.of(position)); }
@@ -339,16 +338,16 @@ public class ContraptionEntity extends Entity implements IRotatable, ISyncableEn
 
     var level = level();
     if(level.isClientSide)
-      PacketHandler.sendToServer(new PacketSyncBlocks(getId(), getUUID(), blocks));
+      CoreNetworkChannel.CoreChannel.sendToServer(new PacketSyncBlocks(getId(), getUUID(), blocks));
     else
-      PacketHandler.sendToAllClients(new PacketSyncBlocks(getId(), getUUID(), blocks), level);
+      CoreNetworkChannel.CoreChannel.sendToAllClients(new PacketSyncBlocks(getId(), getUUID(), blocks), level);
   }
 
   public void syncBlocks(Set<BlockData> blocks) {
     var level = level();
     if(level.isClientSide)
-      PacketHandler.sendToServer(new PacketSyncBlocks(getId(), getUUID(), blocks));
+      CoreNetworkChannel.CoreChannel.sendToServer(new PacketSyncBlocks(getId(), getUUID(), blocks));
     else
-      PacketHandler.sendToAllClients(new PacketSyncBlocks(getId(), getUUID(), blocks), level);
+      CoreNetworkChannel.CoreChannel.sendToAllClients(new PacketSyncBlocks(getId(), getUUID(), blocks), level);
   }
 }

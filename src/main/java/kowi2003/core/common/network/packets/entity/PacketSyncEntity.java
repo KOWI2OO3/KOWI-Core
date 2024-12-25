@@ -3,7 +3,8 @@ package kowi2003.core.common.network.packets.entity;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import kowi2003.core.common.network.PacketHandler;
+import kowi2003.core.common.init.CoreNetworkChannel;
+import kowi2003.core.common.network.packets.IHandledPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -13,7 +14,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
-public class PacketSyncEntity {
+public class PacketSyncEntity implements IHandledPacket {
     
     int id;
     UUID entityId;
@@ -53,7 +54,7 @@ public class PacketSyncEntity {
 
                 for(var localPlayer : level.getServer().getPlayerList().getPlayers()) {
                     if(localPlayer != player)
-                        PacketHandler.sendToClient(new PacketSyncEntity(id, entityId, entityData), localPlayer);
+                        CoreNetworkChannel.CoreChannel.sendToClient(new PacketSyncEntity(id, entityId, entityData), localPlayer);
                 }
             }
         });

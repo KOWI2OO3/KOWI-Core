@@ -9,7 +9,8 @@ import javax.annotation.Nonnull;
 
 import kowi2003.core.common.contraptions.BlockData;
 import kowi2003.core.common.entities.entity.ContraptionEntity;
-import kowi2003.core.common.network.PacketHandler;
+import kowi2003.core.common.init.CoreNetworkChannel;
+import kowi2003.core.common.network.packets.IHandledPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
@@ -19,7 +20,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 
-public class PacketSyncBlocks {
+public class PacketSyncBlocks implements IHandledPacket {
      
     int id;
     UUID entityId;
@@ -65,7 +66,7 @@ public class PacketSyncBlocks {
 
                 for(var localPlayer : level.getServer().getPlayerList().getPlayers()) {
                     if(localPlayer != player)
-                        PacketHandler.sendToClient(new PacketSyncBlocks(id, entityId, blocks), localPlayer);
+                        CoreNetworkChannel.CoreChannel.sendToClient(new PacketSyncBlocks(id, entityId, blocks), localPlayer);
                 }
             }
         });
