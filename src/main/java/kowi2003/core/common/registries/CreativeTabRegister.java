@@ -2,6 +2,7 @@ package kowi2003.core.common.registries;
 
 import java.util.function.Supplier;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -12,7 +13,7 @@ public class CreativeTabRegister implements IRegistry {
     private final DeferredRegister<CreativeModeTab> CREATIVE_TAB_REGISTRY;
 
     public CreativeTabRegister(String modId) {
-        CREATIVE_TAB_REGISTRY  = DeferredRegister.create(net.minecraft.core.registries.Registries.CREATIVE_MODE_TAB, modId);
+        CREATIVE_TAB_REGISTRY  = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, modId);
     }
 
     /**
