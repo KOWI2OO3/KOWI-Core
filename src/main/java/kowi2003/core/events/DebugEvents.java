@@ -3,14 +3,14 @@ package kowi2003.core.events;
 import org.lwjgl.glfw.GLFW;
 
 import kowi2003.core.Core;
-import kowi2003.core.colliders.CollisionHelper;
-import kowi2003.core.utils.RenderHelper;
-import kowi2003.core.utils.Utils;
+import kowi2003.core.common.colliders.CollisionHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent.Stage;
@@ -23,9 +23,19 @@ public class DebugEvents {
     
     static boolean isDebug = false;
 
+    /**
+     * checks whether an key is down
+     * @param key the key id as specified by GLFW <i><br>(keys: GLFW.GLFW_KEY_??</i>)
+     * @return
+     */
+    @OnlyIn(Dist.CLIENT)
+    public static boolean isKeyDown(int key) {
+        return GLFW.glfwGetKey(Minecraft.getInstance().getWindow().getWindow(), key) == GLFW.GLFW_TRUE;
+    }
+
     @SubscribeEvent
     public static void handleInput(InputEvent event) {
-        if(Utils.isKeyDown(GLFW.GLFW_KEY_F3) && Utils.isKeyDown(GLFW.GLFW_KEY_F7)) {
+        if(isKeyDown(GLFW.GLFW_KEY_F3) && isKeyDown(GLFW.GLFW_KEY_F7)) {
             isDebug = !isDebug;
         }
     }
@@ -58,7 +68,7 @@ public class DebugEvents {
             for(var sphere : spheres) {
                 pose.pushPose();
                 pose.translate(sphere.center().x, sphere.center().y, sphere.center().z);
-                RenderHelper.renderCubeSphereShaderless(pose, 10, (float)sphere.radius(), new float[] {1f, 1f, 1f, 1f});
+                // RenderHelper.renderCubeSphereShaderless(pose, 10, (float)sphere.radius(), new float[] {1f, 1f, 1f, 1f});
                 pose.popPose();
             }
         }
