@@ -40,7 +40,7 @@ public class ContainerBlock extends BaseEntityBlock {
 
 	/**
      * Creates a new block with blockentity
-     * @param properties the properties of the block
+     * @param builder the properties of the block
      * @param provider the provider of the blockentity
      */
     public ContainerBlock(Properties builder, IBlockEntityProvider<?> provider) {
@@ -50,7 +50,7 @@ public class ContainerBlock extends BaseEntityBlock {
 	
 	/**
      * Creates a new block with blockentity
-     * @param properties the properties of the block
+     * @param builder the properties of the block
      * @param provider the provider of the blockentity
      * @param sound the sound type the block should make
      */
@@ -62,7 +62,7 @@ public class ContainerBlock extends BaseEntityBlock {
 
     /**
      * Creates a new block with blockentity
-     * @param properties the properties of the block
+     * @param builder the properties of the block
      * @param provider the provider of the blockentity
      * @param shape the shape used for collision and clipping
      */
@@ -72,7 +72,7 @@ public class ContainerBlock extends BaseEntityBlock {
 
     /**
      * Creates a new block with blockentity
-     * @param properties the properties of the block
+     * @param builder the properties of the block
      * @param provider the provider of the blockentity
      * @param sound the sound type the block should make
      * @param shape the shape used for collision and clipping
@@ -88,6 +88,7 @@ public class ContainerBlock extends BaseEntityBlock {
 		this(builder, null);
 	}
 	
+	@Override
 	public RenderShape getRenderShape(@Nullable BlockState state) {
 		return RenderShape.MODEL;
 	}
@@ -106,8 +107,8 @@ public class ContainerBlock extends BaseEntityBlock {
 			if(tile instanceof IInteractable interactable)
 				return interactable.use(state, world, pos, player, hand, raytraceResult);
 			
-            if(tile instanceof MenuProvider provider) {
-                NetworkHooks.openScreen((ServerPlayer)player, provider, pos);
+            if(tile instanceof MenuProvider menuProvider) {
+                NetworkHooks.openScreen((ServerPlayer)player, menuProvider, pos);
                 return InteractionResult.SUCCESS;
             }
 		}
