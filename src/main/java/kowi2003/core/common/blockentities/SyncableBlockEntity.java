@@ -1,4 +1,4 @@
-package kowi2003.core.common.tile;
+package kowi2003.core.common.blockentities;
 
 import javax.annotation.Nullable;
 
