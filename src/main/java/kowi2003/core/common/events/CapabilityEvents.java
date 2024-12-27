@@ -1,10 +1,10 @@
 package kowi2003.core.common.events;
 
 import kowi2003.core.Core;
-import kowi2003.core.common.capabilities.ItemCapabilityProvider;
-import kowi2003.core.common.capabilities.ItemEnergyStorage;
-import kowi2003.core.common.capabilities.ItemFluidHandler;
-import kowi2003.core.common.capabilities.ItemItemStackHandler;
+import kowi2003.core.common.capabilities.item.ItemCapabilityProvider;
+import kowi2003.core.common.capabilities.item.ItemEnergyStorage;
+import kowi2003.core.common.capabilities.item.ItemFluidHandler;
+import kowi2003.core.common.capabilities.item.ItemItemStackHandler;
 import kowi2003.core.common.items.interfaces.ICapabilityItem;
 import kowi2003.core.common.items.interfaces.IItemEnergyStorage;
 import kowi2003.core.common.items.interfaces.IItemFluidContainer;

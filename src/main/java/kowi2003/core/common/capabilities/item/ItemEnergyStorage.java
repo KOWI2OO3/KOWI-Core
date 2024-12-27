@@ -1,4 +1,4 @@
-package kowi2003.core.common.capabilities;
+package kowi2003.core.common.capabilities.item;
 
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.Tag;
