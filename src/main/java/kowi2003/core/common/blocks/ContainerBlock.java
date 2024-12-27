@@ -2,6 +2,7 @@ package kowi2003.core.common.blocks;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -60,6 +61,16 @@ public class ContainerBlock extends BaseEntityBlock {
 		this.sound = sound;
 	}
 
+	/**
+     * Creates a new block with blockentity
+     * @param builder the properties of the block
+     * @param provider the provider of the blockentity
+     * @param sound the sound type the block should make
+     */
+	public ContainerBlock(Properties builder, IBlockEntityProvider<?> provider, SoundType sound, Supplier<VoxelShape> shape) {
+		this(builder, provider, sound, shape.get());
+	}
+
     /**
      * Creates a new block with blockentity
      * @param builder the properties of the block
@@ -68,6 +79,16 @@ public class ContainerBlock extends BaseEntityBlock {
      */
 	public ContainerBlock(Properties builder, IBlockEntityProvider<?> provider, VoxelShape shape) {
 		super(builder);
+	}
+
+	/**
+     * Creates a new block with blockentity
+     * @param builder the properties of the block
+     * @param provider the provider of the blockentity
+     * @param shape the shape used for collision and clipping
+     */
+	public ContainerBlock(Properties builder, IBlockEntityProvider<?> provider, Supplier<VoxelShape> shape) {
+		this(builder, provider, shape.get());
 	}
 
     /**
