@@ -12,14 +12,14 @@
     {
       "label": "prepareRunClientCompile [Testing Core]",
       "type": "shell",
-      "command": "./gradlew TestingCore:prepareRunClientCompile",
+      "command": "./gradlew buildDependents",
       "options": {
         "cwd": "${workspaceFolder}"
       }
     },
     {
       "label": "prepareRunClientCompile",
-      "dependsOn": ["prepareRunClientCompile [Core]", "prepareRunClientCompile [Testing Core]"]
+      "dependsOn": ["prepareRunClientCompile [Testing Core]", "prepareRunClientCompile [Core]"]
     },
     {
       "label": "prepareRunDataCompile",

@@ -1,0 +1,11 @@
+{
+	"variants": 
+	{
+		"facing=north": { "model": "testing_core:block/example_block_rotatable", "x": -90, "y": 180 },
+		"facing=east": { "model": "testing_core:block/example_block_rotatable", "x": -90, "y": 270 },
+		"facing=south": { "model": "testing_core:block/example_block_rotatable", "x": -90 },
+		"facing=west": { "model": "testing_core:block/example_block_rotatable", "x": -90, "y": 90 },
+		"facing=up": { "model": "testing_core:block/example_block_rotatable" },
+		"facing=down": { "model": "testing_core:block/example_block_rotatable", "x": 180 }
+	}
+}
