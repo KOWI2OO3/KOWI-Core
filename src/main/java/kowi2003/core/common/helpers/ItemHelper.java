@@ -64,6 +64,16 @@ public final class ItemHelper {
 		return stack;
 	}
 
+    /**
+     * Sets the color of the itemstack
+     * @param stack The itemstack to set the color of
+     * @param color The color to set to the item
+     * @return The itemstack with the new color
+     */
+	public static ItemStack setColor(ItemStack stack, Color color) {
+		return setColor(stack, color.red(), color.green(), color.blue());
+	}
+
 	/**
 	 * Gets the energy from the itemstacks nbt data
 	 * @param stack The itemstack to get the energy from

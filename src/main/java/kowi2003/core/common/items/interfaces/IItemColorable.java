@@ -18,5 +18,9 @@ public interface IItemColorable {
 	default ItemStack setColor(ItemStack stack, float red, float green, float blue) {
 		return ItemHelper.setColor(stack, red, green, blue);
 	}
+
+	default ItemStack setColor(ItemStack stack, Color color) {
+		return ItemHelper.setColor(stack, color);
+	}
 	
 }
