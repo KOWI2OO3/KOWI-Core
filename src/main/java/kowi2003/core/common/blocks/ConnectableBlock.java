@@ -2,12 +2,13 @@ package kowi2003.core.common.blocks;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-import kowi2003.core.common.blocks.functions.IBlockEntityProvider;
+import kowi2003.core.common.blocks.functions.IBlockConnector;
+import kowi2003.core.common.helpers.ShapeHelper;
 import kowi2003.core.common.helpers.Utils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,7 +29,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class ConnectorContainerBlock extends ContainerBlock {
+public class ConnectableBlock extends DefaultBlock {
 	public static final BooleanProperty NORTH = BlockStateProperties.NORTH;
 	public static final BooleanProperty EAST = BlockStateProperties.EAST;
 	public static final BooleanProperty SOUTH = BlockStateProperties.SOUTH;
@@ -38,15 +39,19 @@ public class ConnectorContainerBlock extends ContainerBlock {
 
 	public IBlockConnector blockConnector;
 
+	private Map<Direction, VoxelShape> shapes;
+	
 	/**
      * Creates a new horizontal block
      * @param properties the properties of the block
      * @param sound the sound type the block should make
      * @param shape the shape used for collision and clipping
      */
-    public ConnectorContainerBlock(Properties properties, IBlockEntityProvider<?> provider, SoundType sound, VoxelShape shape, IBlockConnector blockConnector) {
-        super(properties, provider, sound, shape);
+    public ConnectableBlock(Properties properties, SoundType sound, VoxelShape baseshape, VoxelShape extensionShape, IBlockConnector blockConnector) {
+        super(properties, sound, baseshape);
         this.blockConnector = blockConnector;
+		this.shapes = ShapeHelper.createRotatedShapes(extensionShape);
+		defineDefaultState();
     }
 
 	/**
@@ -55,9 +60,11 @@ public class ConnectorContainerBlock extends ContainerBlock {
      * @param sound the sound type the block should make
      * @param shape the shape used for collision and clipping
      */
-    public ConnectorContainerBlock(Properties properties, IBlockEntityProvider<?> provider, SoundType sound, Supplier<VoxelShape> shape, IBlockConnector blockConnector) {
-        super(properties, provider, sound, shape);
+    public ConnectableBlock(Properties properties, SoundType sound, Supplier<VoxelShape> baseshape, Supplier<VoxelShape> extensionShape, IBlockConnector blockConnector) {
+        super(properties, sound, baseshape);
         this.blockConnector = blockConnector;
+		this.shapes = ShapeHelper.createRotatedShapes(extensionShape.get());
+		defineDefaultState();
     }
 
 	/**
@@ -65,9 +72,11 @@ public class ConnectorContainerBlock extends ContainerBlock {
      * @param properties the properties of the block
      * @param shape the shape used for collision and clipping
      */
-	public ConnectorContainerBlock(Properties properties, IBlockEntityProvider<?> provider, VoxelShape shape, IBlockConnector blockConnector) {
-        super(properties, provider, shape);
+	public ConnectableBlock(Properties properties, VoxelShape baseshape, VoxelShape extensionShape, IBlockConnector blockConnector) {
+        super(properties, baseshape);
         this.blockConnector = blockConnector;
+		this.shapes = ShapeHelper.createRotatedShapes(extensionShape);
+		defineDefaultState();
     }
 
 	/**
@@ -75,9 +84,11 @@ public class ConnectorContainerBlock extends ContainerBlock {
      * @param properties the properties of the block
      * @param shape the shape used for collision and clipping
      */
-    public ConnectorContainerBlock(Properties properties, IBlockEntityProvider<?> provider, Supplier<VoxelShape> shape, IBlockConnector blockConnector) {
-        super(properties, provider, shape);
+    public ConnectableBlock(Properties properties, Supplier<VoxelShape> baseshape, Supplier<VoxelShape> extensionShape, IBlockConnector blockConnector) {
+        super(properties, baseshape);
         this.blockConnector = blockConnector;
+		this.shapes = ShapeHelper.createRotatedShapes(extensionShape.get());
+		defineDefaultState();
     }
 
     /**
@@ -85,18 +96,20 @@ public class ConnectorContainerBlock extends ContainerBlock {
      * @param properties the properties of the block
      * @param sound the sound type the block should make
      */
-	public ConnectorContainerBlock(Properties properties, IBlockEntityProvider<?> provider, SoundType sound, IBlockConnector blockConnector) {
-        super(properties, provider, sound);
+	public ConnectableBlock(Properties properties, SoundType sound, IBlockConnector blockConnector) {
+        super(properties, sound);
         this.blockConnector = blockConnector;
+		defineDefaultState();
     }
 
 	/**
      * Creates a new horizontal block
      * @param properties the properties of the block
      */
-    public ConnectorContainerBlock(Properties properties, IBlockEntityProvider<?> provider, IBlockConnector blockConnector) {
-        super(properties, provider);
+    public ConnectableBlock(Properties properties, IBlockConnector blockConnector) {
+        super(properties);
         this.blockConnector = blockConnector;
+		defineDefaultState();
     }
     
 	@Override
@@ -137,46 +150,21 @@ public class ConnectorContainerBlock extends ContainerBlock {
 	public boolean connectsTo(Level level, BlockPos pos, Direction dir) {
 		pos = Utils.offset(pos, dir, 1);
 		BlockState state = level.getBlockState(pos);
-		return blockConnector.connectsTo(level, state, pos, dir);
-	}
-	
-	protected VoxelShape getBaseShape() {
-		return Shapes.box(0.356, 0.356, 0.356, 0.644, 0.644, 0.644);
-	}
-	
-	protected VoxelShape getNorthShape() {
-		return Shapes.box(0.356, 0.362, 0, 0.642, 0.643, 0.4);
-	}
-	
-	protected VoxelShape getEastShape() {
-		return Shapes.box(0.6, 0.363, 0.356, 1, 0.643, 0.642);
-	}
-	
-	protected VoxelShape getSouthShape() {
-		return Shapes.box(0.357, 0.362, 0.6, 0.644, 0.643, 1);
-	}
-	
-	protected VoxelShape getWestShape() {
-		return Shapes.box(0, 0.362, 0.357, 0.4, 0.643, 0.644);
-	}
-	
-	protected VoxelShape getUpShape() {
-		return Shapes.box(0.357, 0.6, 0.356, 0.637, 1, 0.642);
-	}
-	
-	protected VoxelShape getDownShape() {
-		return Shapes.box(0.362, 0, 0.356, 0.643, 0.4, 0.642);
+		return blockConnector.connectsTo(level, this, state, pos, dir);
 	}
 	
 	public VoxelShape getAssembledShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
 		 List<VoxelShape> shapes = new ArrayList<>();
-		    shapes.add(getBaseShape());
-		    if(state.getValue(NORTH)) shapes.add(getNorthShape());
-		    if(state.getValue(EAST)) shapes.add(getEastShape());
-		    if(state.getValue(SOUTH)) shapes.add(getSouthShape());
-		    if(state.getValue(WEST)) shapes.add(getWestShape());
-		    if(state.getValue(UP)) shapes.add(getUpShape());
-		    if(state.getValue(DOWN)) shapes.add(getDownShape());
+		    shapes.add(this.shape);
+
+			if(!this.shapes.isEmpty()) {
+				if(state.getValue(NORTH)) shapes.add(this.shapes.get(Direction.NORTH));
+				if(state.getValue(EAST)) shapes.add(this.shapes.get(Direction.EAST));
+				if(state.getValue(SOUTH)) shapes.add(this.shapes.get(Direction.SOUTH));
+				if(state.getValue(WEST)) shapes.add(this.shapes.get(Direction.WEST));
+				if(state.getValue(UP)) shapes.add(this.shapes.get(Direction.UP));
+				if(state.getValue(DOWN)) shapes.add(this.shapes.get(Direction.DOWN));
+			}
 		    
 		    VoxelShape result = Shapes.empty();
 		    for(VoxelShape shape : shapes)
@@ -191,11 +179,18 @@ public class ConnectorContainerBlock extends ContainerBlock {
 	}
 	
 	@Override
-	public RenderShape getRenderShape(@Nullable BlockState state) {
+	public RenderShape getRenderShape(@Nonnull BlockState p_49232_) {
 		return RenderShape.MODEL;
 	}
-	
-	public static interface IBlockConnector {
-		boolean connectsTo(Level level, BlockState state, BlockPos pos, Direction dir);
+
+	private void defineDefaultState() {
+		registerDefaultState(defaultBlockState()
+			.setValue(NORTH, false)
+			.setValue(EAST, false)
+			.setValue(SOUTH, false)
+			.setValue(WEST, false)
+			.setValue(UP, false)
+			.setValue(DOWN, false)
+		);
 	}
 }

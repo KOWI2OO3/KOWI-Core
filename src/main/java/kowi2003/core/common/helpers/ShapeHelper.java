@@ -269,7 +269,7 @@ public final class ShapeHelper {
 
     /**
      * Creates a map of VoxelShapes for each direction
-     * @param shape the VoxelShape to create the map from
+     * @param shape the VoxelShape to create the map from, this should be the up facing shape
      * @return the map of VoxelShapes for each direction
      */
     public static Map<Direction, VoxelShape> createRotatedShapes(VoxelShape shape)
@@ -284,7 +284,7 @@ public final class ShapeHelper {
 
     /**
      * Creates a map of VoxelShapes for each direction and vertical state
-     * @param shape the VoxelShape to create the map from
+     * @param shape the VoxelShape to create the map from, this should be the up facing shape
      * @return the map of VoxelShapes for each direction and vertical state
      */
     public static Map<Boolean, Map<Direction, VoxelShape>> createOrientedShapes(VoxelShape shape)

@@ -1,0 +1,46 @@
+{
+	"multipart": [
+		{
+			"apply": [ { "model": "testing_core:block/example_block_connectable/base" } ]
+		},
+		{
+			"when": { "up": true },
+			"apply": [ { "model": "testing_core:block/example_block_connectable/up" } ]
+		},
+		{
+			"when": { "down": true },
+			"apply": [ { "model": "testing_core:block/example_block_connectable/down" } ]
+		},
+		{
+			"when": { "north": true },
+			"apply": [
+				{
+					"model": "testing_core:block/example_block_connectable/side",
+					"y": 270
+				}
+			]
+		},
+		{
+			"when": { "east": true },
+			"apply": [ { "model": "testing_core:block/example_block_connectable/side" } ]
+		},
+		{
+			"when": { "south": true },
+			"apply": [
+				{
+					"model": "testing_core:block/example_block_connectable/side",
+					"y": 90
+				}
+			]
+		},
+		{
+			"when": { "west": true },
+			"apply": [
+				{
+					"model": "testing_core:block/example_block_connectable/side",
+					"y": 180
+				}
+			]
+		}
+	]
+}

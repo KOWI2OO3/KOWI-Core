@@ -160,5 +160,4 @@ public final class StencilHelper {
 		setStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP);
 	}
 
-
 }

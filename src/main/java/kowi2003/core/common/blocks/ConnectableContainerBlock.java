@@ -2,10 +2,15 @@ package kowi2003.core.common.blocks;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
+import kowi2003.core.common.blocks.functions.IBlockConnector;
+import kowi2003.core.common.blocks.functions.IBlockEntityProvider;
+import kowi2003.core.common.helpers.ShapeHelper;
 import kowi2003.core.common.helpers.Utils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,7 +31,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class ConnectorBlock extends DefaultBlock {
+public class ConnectableContainerBlock extends ContainerBlock {
 	public static final BooleanProperty NORTH = BlockStateProperties.NORTH;
 	public static final BooleanProperty EAST = BlockStateProperties.EAST;
 	public static final BooleanProperty SOUTH = BlockStateProperties.SOUTH;
@@ -36,16 +41,7 @@ public class ConnectorBlock extends DefaultBlock {
 
 	public IBlockConnector blockConnector;
 
-	/**
-     * Creates a new horizontal block
-     * @param properties the properties of the block
-     * @param sound the sound type the block should make
-     * @param shape the shape used for collision and clipping
-     */
-    public ConnectorBlock(Properties properties, SoundType sound, VoxelShape shape, IBlockConnector blockConnector) {
-        super(properties, sound, shape);
-        this.blockConnector = blockConnector;
-    }
+	private Map<Direction, VoxelShape> shapes;
 
 	/**
      * Creates a new horizontal block
@@ -53,9 +49,22 @@ public class ConnectorBlock extends DefaultBlock {
      * @param sound the sound type the block should make
      * @param shape the shape used for collision and clipping
      */
-    public ConnectorBlock(Properties properties, SoundType sound, Supplier<VoxelShape> shape, IBlockConnector blockConnector) {
-        super(properties, sound, shape);
+    public ConnectableContainerBlock(Properties properties, IBlockEntityProvider<?> provider, SoundType sound, VoxelShape baseShape, VoxelShape extensionShape, IBlockConnector blockConnector) {
+        super(properties, provider, sound, baseShape);
         this.blockConnector = blockConnector;
+		this.shapes = ShapeHelper.createRotatedShapes(extensionShape);
+    }
+
+	/**
+     * Creates a new horizontal block
+     * @param properties the properties of the block
+     * @param sound the sound type the block should make
+     * @param shape the shape used for collision and clipping
+     */
+    public ConnectableContainerBlock(Properties properties, IBlockEntityProvider<?> provider, SoundType sound, Supplier<VoxelShape> baseShape, Supplier<VoxelShape> extensionShape, IBlockConnector blockConnector) {
+        super(properties, provider, sound, baseShape);
+        this.blockConnector = blockConnector;
+		this.shapes = ShapeHelper.createRotatedShapes(extensionShape.get());
     }
 
 	/**
@@ -63,9 +72,10 @@ public class ConnectorBlock extends DefaultBlock {
      * @param properties the properties of the block
      * @param shape the shape used for collision and clipping
      */
-	public ConnectorBlock(Properties properties, VoxelShape shape, IBlockConnector blockConnector) {
-        super(properties, shape);
+	public ConnectableContainerBlock(Properties properties, IBlockEntityProvider<?> provider, VoxelShape baseShape, VoxelShape extensionShape, IBlockConnector blockConnector) {
+        super(properties, provider, baseShape);
         this.blockConnector = blockConnector;
+		this.shapes = ShapeHelper.createRotatedShapes(extensionShape);
     }
 
 	/**
@@ -73,9 +83,10 @@ public class ConnectorBlock extends DefaultBlock {
      * @param properties the properties of the block
      * @param shape the shape used for collision and clipping
      */
-    public ConnectorBlock(Properties properties, Supplier<VoxelShape> shape, IBlockConnector blockConnector) {
-        super(properties, shape);
+    public ConnectableContainerBlock(Properties properties, IBlockEntityProvider<?> provider, Supplier<VoxelShape> baseShape, Supplier<VoxelShape> extensionShape, IBlockConnector blockConnector) {
+        super(properties, provider, baseShape);
         this.blockConnector = blockConnector;
+		this.shapes = ShapeHelper.createRotatedShapes(extensionShape.get());
     }
 
     /**
@@ -83,8 +94,8 @@ public class ConnectorBlock extends DefaultBlock {
      * @param properties the properties of the block
      * @param sound the sound type the block should make
      */
-	public ConnectorBlock(Properties properties, SoundType sound, IBlockConnector blockConnector) {
-        super(properties, sound);
+	public ConnectableContainerBlock(Properties properties, IBlockEntityProvider<?> provider, SoundType sound, IBlockConnector blockConnector) {
+        super(properties, provider, sound);
         this.blockConnector = blockConnector;
     }
 
@@ -92,8 +103,8 @@ public class ConnectorBlock extends DefaultBlock {
      * Creates a new horizontal block
      * @param properties the properties of the block
      */
-    public ConnectorBlock(Properties properties, IBlockConnector blockConnector) {
-        super(properties);
+    public ConnectableContainerBlock(Properties properties, IBlockEntityProvider<?> provider, IBlockConnector blockConnector) {
+        super(properties, provider);
         this.blockConnector = blockConnector;
     }
     
@@ -135,53 +146,28 @@ public class ConnectorBlock extends DefaultBlock {
 	public boolean connectsTo(Level level, BlockPos pos, Direction dir) {
 		pos = Utils.offset(pos, dir, 1);
 		BlockState state = level.getBlockState(pos);
-		return blockConnector.connectsTo(level, state, pos, dir);
-	}
-	
-	protected VoxelShape getBaseShape() {
-		return Shapes.box(0.356, 0.356, 0.356, 0.644, 0.644, 0.644);
-	}
-	
-	protected VoxelShape getNorthShape() {
-		return Shapes.box(0.356, 0.362, 0, 0.642, 0.643, 0.4);
-	}
-	
-	protected VoxelShape getEastShape() {
-		return Shapes.box(0.6, 0.363, 0.356, 1, 0.643, 0.642);
-	}
-	
-	protected VoxelShape getSouthShape() {
-		return Shapes.box(0.357, 0.362, 0.6, 0.644, 0.643, 1);
-	}
-	
-	protected VoxelShape getWestShape() {
-		return Shapes.box(0, 0.362, 0.357, 0.4, 0.643, 0.644);
-	}
-	
-	protected VoxelShape getUpShape() {
-		return Shapes.box(0.357, 0.6, 0.356, 0.637, 1, 0.642);
-	}
-	
-	protected VoxelShape getDownShape() {
-		return Shapes.box(0.362, 0, 0.356, 0.643, 0.4, 0.642);
+		return blockConnector.connectsTo(level, this, state, pos, dir);
 	}
 	
 	public VoxelShape getAssembledShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
-		 List<VoxelShape> shapes = new ArrayList<>();
-		    shapes.add(getBaseShape());
-		    if(state.getValue(NORTH)) shapes.add(getNorthShape());
-		    if(state.getValue(EAST)) shapes.add(getEastShape());
-		    if(state.getValue(SOUTH)) shapes.add(getSouthShape());
-		    if(state.getValue(WEST)) shapes.add(getWestShape());
-		    if(state.getValue(UP)) shapes.add(getUpShape());
-		    if(state.getValue(DOWN)) shapes.add(getDownShape());
-		    
-		    VoxelShape result = Shapes.empty();
-		    for(VoxelShape shape : shapes)
-		        result = Shapes.join(result, shape, BooleanOp.OR);
-		    
-		    return result.optimize();
-	}
+		List<VoxelShape> shapes = new ArrayList<>();
+		   shapes.add(this.shape);
+
+		   if(!this.shapes.isEmpty()) {
+			   if(state.getValue(NORTH)) shapes.add(this.shapes.get(Direction.NORTH));
+			   if(state.getValue(EAST)) shapes.add(this.shapes.get(Direction.EAST));
+			   if(state.getValue(SOUTH)) shapes.add(this.shapes.get(Direction.SOUTH));
+			   if(state.getValue(WEST)) shapes.add(this.shapes.get(Direction.WEST));
+			   if(state.getValue(UP)) shapes.add(this.shapes.get(Direction.UP));
+			   if(state.getValue(DOWN)) shapes.add(this.shapes.get(Direction.DOWN));
+		   }
+		   
+		   VoxelShape result = Shapes.empty();
+		   for(VoxelShape shape : shapes)
+			   result = Shapes.join(result, shape, BooleanOp.OR);
+		   
+		   return result.optimize();
+   }
 	
 	@Override
 	public VoxelShape getShape(@Nonnull BlockState state, @Nonnull BlockGetter world, @Nonnull BlockPos pos, @Nonnull CollisionContext context) {
@@ -189,11 +175,7 @@ public class ConnectorBlock extends DefaultBlock {
 	}
 	
 	@Override
-	public RenderShape getRenderShape(@Nonnull BlockState p_49232_) {
+	public RenderShape getRenderShape(@Nullable BlockState state) {
 		return RenderShape.MODEL;
-	}
-	
-	public static interface IBlockConnector {
-		boolean connectsTo(Level level, BlockState state, BlockPos pos, Direction dir);
 	}
 }

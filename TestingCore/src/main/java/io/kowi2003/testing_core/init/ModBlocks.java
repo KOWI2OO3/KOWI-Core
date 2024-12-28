@@ -1,11 +1,13 @@
 package io.kowi2003.testing_core.init;
 
 import io.kowi2003.testing_core.TestingCore;
+import kowi2003.core.common.blocks.ConnectableBlock;
 import kowi2003.core.common.blocks.DefaultBlock;
 import kowi2003.core.common.blocks.HorizontalBlock;
 import kowi2003.core.common.blocks.OrientableBlock;
 import kowi2003.core.common.blocks.RotatableBlock;
 import kowi2003.core.common.blocks.VerticalBlock;
+import kowi2003.core.common.helpers.BlockHelper;
 import kowi2003.core.common.registries.BlockRegister;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -53,6 +55,15 @@ public class ModBlocks {
         Block.Properties.of()
         .strength(3.0F, 3.0F),
         Shapes.box(0, 0, 0, .25, 0.25, 1)   // Rotatable shape for the orientale block
+    ));
+
+    // Example of using the orientable block to easily add a block that can be set in any direction and upside down (like stairs)
+    public static final RegistryObject<Block> EXAMPLE_CONNECTABLE_BLOCK = BLOCKS.register("example_block_connectable", () -> new ConnectableBlock(
+        Block.Properties.of()
+        .strength(3.0F, 3.0F),
+        Shapes.box(0.375, 0.375, 0.375, 0.625, 0.625, 0.625),   // Rotatable shape for the orientale block
+        Shapes.box(0.375, 0.625, 0.375, 0.625, 1, 0.625),
+        BlockHelper.connectToSolidFaceOrSelf()
     ));
 
     // Register the blocks to the event bus, similar to how you would do it normally
