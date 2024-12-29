@@ -7,7 +7,7 @@ import net.minecraftforge.client.model.renderable.CompositeRenderable;
 import net.minecraftforge.client.model.renderable.CompositeRenderable.Transforms;
 import net.minecraftforge.client.model.renderable.ITextureRenderTypeLookup;
 
-public final class WavefontModel implements IModel 
+public final class WavefontModel implements IAnimatedModel 
 {
     private final CompositeRenderable renderable;
     private Transforms transforms;
@@ -21,6 +21,11 @@ public final class WavefontModel implements IModel
     public void render(PoseStack pose, MultiBufferSource buffersrc, ITextureRenderTypeLookup rendertypeLookup,
             int combinedLightIn, int combinedOverlayIn, float partialTicks) {
         renderable.render(pose, buffersrc, rendertypeLookup, combinedLightIn, combinedOverlayIn, partialTicks, transforms);
+    }
+
+    @Override
+    public void applyAnimation(Transforms transforms) {
+        this.transforms = transforms;
     }
     
 }
