@@ -4,6 +4,7 @@ import io.kowi2003.testing_core.init.ModBlocks;
 import io.kowi2003.testing_core.init.ModConfig;
 import io.kowi2003.testing_core.init.ModCreativeTabs;
 import io.kowi2003.testing_core.init.ModItems;
+import io.kowi2003.testing_core.init.ModModels;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -37,6 +38,7 @@ public class TestingCore
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
+        ModModels.registry.register(modEventBus);
 
         MinecraftForge.EVENT_BUS.register(this);
     }

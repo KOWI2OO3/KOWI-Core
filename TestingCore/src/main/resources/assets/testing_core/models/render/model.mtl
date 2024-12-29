@@ -1,0 +1,6 @@
+# Made in Blockbench 4.11.2
+newmtl m_6ba167c2-ee98-24d0-b987-1555fda50775
+map_Kd testing_core:render/texture
+newmtl m_968e8f47-ba3f-28b1-0519-d290818431e3
+map_Kd testing_core:render/texture
+newmtl none
