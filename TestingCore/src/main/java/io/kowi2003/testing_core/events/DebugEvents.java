@@ -1,20 +1,17 @@
 package io.kowi2003.testing_core.events;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
-import com.google.gson.GsonBuilder;
-
 import io.kowi2003.testing_core.TestingCore;
 import io.kowi2003.testing_core.init.ModModels;
 import kowi2003.core.client.animation.Animation;
-import kowi2003.core.client.animation.AnimationSerializer;
 import kowi2003.core.client.animation.KeyFrame;
 import kowi2003.core.client.animation.PartAnimation;
+import kowi2003.core.client.helpers.AnimationHelper;
 import kowi2003.core.client.helpers.RenderHelper;
 import kowi2003.core.client.model.IAnimatedModel;
 import net.minecraft.client.Minecraft;
@@ -53,13 +50,8 @@ public class DebugEvents {
         var light = RenderHelper.getBrightness(new BlockPos(0, 0, 0));
 
         if(GLFW.glfwGetKey(mc.getWindow().getWindow(), GLFW.GLFW_KEY_MINUS) == GLFW.GLFW_TRUE) {
-            var gson = new GsonBuilder().registerTypeAdapter(Animation.class, new AnimationSerializer()).create();
             var rl = new ResourceLocation(TestingCore.MODID, "animations/animation.json");
-            var resource = mc.getResourceManager().getResource(rl).get();
-            
-            try {
-                animation = gson.fromJson(resource.openAsReader(), Animation.class);
-            }catch(IOException ex) {}
+            animation = AnimationHelper.loadAnimation(rl);
         }
 
         if(model == null) {

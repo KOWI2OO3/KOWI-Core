@@ -21,13 +21,23 @@ import net.minecraftforge.client.model.obj.ObjModel;
 import net.minecraftforge.client.model.obj.ObjModel.ModelSettings;
 import net.minecraftforge.eventbus.api.IEventBus;
 
-public class ModelRegistry implements IRegistry
+public class ModelRegister implements IRegistry
 {
     private static final String WAVEFONT_EXTENSION = ".obj";
 
     final List<ResourceLocation> LOCATIONS = new ArrayList<>();
     final Map<ResourceLocation, ModelSettings> SETTINGS = new HashMap<>();
     final Map<ResourceLocation, IModel> registeredModels = new HashMap<>();
+
+    private String modid = null;
+    
+    public ModelRegister(String modid) {
+        this.modid = modid;
+    }
+
+    public IModelType register(String path) {
+        return register(modid != null ? new ResourceLocation(modid, path) : new ResourceLocation(path));
+    }
 
     public IModelType register(ResourceLocation location) 
     {   
