@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 
 import kowi2003.core.client.model.IAnimatedModel;
 import kowi2003.core.client.model.IModel;
+import kowi2003.core.client.registries.AnimationRegister;
 import net.minecraftforge.client.model.renderable.CompositeRenderable.Transforms;
 
 public class Animator {
@@ -21,28 +22,35 @@ public class Animator {
     }
 
     public void pause() {
-        if(animation != null)
+        if(!isStopped())
             animation.pause();
     }
 
     public boolean isPaused() {
-        return animation != null ? animation.isPaused : true; 
+        return !isStopped() ? animation.isPaused : true; 
     }
 
     public void stop() {
-        if(animation != null) 
+        if(!isStopped()) 
         {
             animation.stop();
             animation = null;
         }
+    }
+    
+    public boolean isStopped() {
+        return animation == null;
     }
 
     /**
      * Increments the time of the animation if it is playing
      * @param deltaTime the time difference between the last time calling the function, usually use partialTicks / 40
      */
-    public void increaseTime(float deltaTime) {
+    public void updateAnimation(float deltaTime) {
         if(animation == null) return;
+
+        if(AnimationRegister.requiresReload())
+            play();
 
         animation.increaseTime(deltaTime);
 
